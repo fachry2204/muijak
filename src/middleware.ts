@@ -5,7 +5,8 @@ import createIntlMiddleware from 'next-intl/middleware';
 const intlMiddleware = createIntlMiddleware({
   locales: ['id', 'en', 'ar'],
   defaultLocale: 'id',
-  localePrefix: 'as-needed'
+  localePrefix: 'as-needed',
+  localeDetection: false
 });
 
 export function middleware(req: NextRequest) {

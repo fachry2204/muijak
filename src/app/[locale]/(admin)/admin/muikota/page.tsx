@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Plus, Search, Pencil, Trash2, Loader2, MapPin, X, Download, Upload, CheckCircle, Eye } from 'lucide-react';
+import { Plus, Search, Pencil, Trash2, Loader2, MapPin, X, Download, Upload, CheckCircle, Eye, User, Users } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import dynamic from 'next/dynamic';
 
@@ -85,11 +85,15 @@ export default function MuiKotaManagementPage() {
       });
 
       if (newPimpinan.length > 0 || newAnggota.length > 0) {
-        setForm(prev => ({
-          ...prev,
-          pimpinan: newPimpinan.length > 0 ? newPimpinan : prev.pimpinan,
-          anggota: newAnggota.length > 0 ? newAnggota : prev.anggota
-        }));
+        setForm(prev => {
+          const validPimpinan = prev.pimpinan.filter(p => p.nama.trim() !== '');
+          const validAnggota = prev.anggota.filter(a => a.nama.trim() !== '');
+          return {
+            ...prev,
+            pimpinan: newPimpinan.length > 0 ? [...validPimpinan, ...newPimpinan] : prev.pimpinan,
+            anggota: newAnggota.length > 0 ? [...validAnggota, ...newAnggota] : prev.anggota
+          };
+        });
 
         setImportStats({
           total: newPimpinan.length + newAnggota.length,
@@ -243,9 +247,52 @@ export default function MuiKotaManagementPage() {
       </div>
 
       {!isCreating ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Daftar MUI Kota Terdaftar</CardTitle>
+        <div className="space-y-6">
+          {muiKotaList.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {muiKotaList.map((item, index) => {
+                const cardColors = [
+                  "from-emerald-500 to-emerald-700",
+                  "from-blue-500 to-blue-700",
+                  "from-purple-500 to-purple-700",
+                  "from-orange-500 to-orange-700",
+                  "from-rose-500 to-rose-700",
+                  "from-teal-500 to-teal-700",
+                ];
+                const bgGradient = cardColors[index % cardColors.length];
+                return (
+                  <Card key={item.id} className={`relative overflow-hidden border-0 shadow-md hover:shadow-lg transition-all group bg-gradient-to-br ${bgGradient}`}>
+                    <div 
+                      className="absolute inset-0 opacity-[0.1] pointer-events-none" 
+                      style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")" }}
+                    ></div>
+                    <div className="absolute -right-6 -bottom-6 opacity-20 pointer-events-none transform group-hover:scale-110 group-hover:-rotate-12 transition-transform duration-500">
+                      <Users className="w-32 h-32 text-white" />
+                    </div>
+                    <CardContent className="p-5 relative z-10 text-white">
+                      <h3 className="font-bold text-xl mb-3 line-clamp-1 border-b border-white/20 pb-2" title={item.kota}>{item.kota}</h3>
+                      <div className="space-y-3 mt-4">
+                        <div className="flex items-center text-white/90 text-sm">
+                          <User className="w-4 h-4 mr-2 opacity-80 shrink-0" />
+                          <span className="font-medium mr-1 shrink-0">Ketua:</span> 
+                          <span className="font-semibold line-clamp-1 drop-shadow-md" title={item.ketua_umum}>{item.ketua_umum || '-'}</span>
+                        </div>
+                        <div className="flex items-center text-white/90 text-sm">
+                          <Users className="w-4 h-4 mr-2 opacity-80 shrink-0" />
+                          <span className="font-medium mr-1 shrink-0">Total Anggota:</span> 
+                          <span className="font-bold text-white bg-white/20 px-3 py-0.5 rounded-full backdrop-blur-sm shadow-inner drop-shadow-sm">{(item.pimpinan_count || 0) + (item.anggota_count || 0)}</span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Daftar Tabel MUI Kota</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex gap-4 mb-6">
@@ -260,24 +307,32 @@ export default function MuiKotaManagementPage() {
                 <thead className="bg-slate-50 border-b">
                   <tr>
                     <th className="px-4 py-3 font-medium text-slate-500">Nama Kota</th>
-                    <th className="px-4 py-3 font-medium text-slate-500">Alamat</th>
-                    <th className="px-4 py-3 font-medium text-slate-500">No. Telepon</th>
+                    <th className="px-4 py-3 font-medium text-slate-500 text-center">Pimpinan</th>
+                    <th className="px-4 py-3 font-medium text-slate-500 text-center">Anggota</th>
+                    <th className="px-4 py-3 font-medium text-slate-500 text-center">Total</th>
                     <th className="px-4 py-3 font-medium text-slate-500 text-right">Aksi</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y text-slate-600">
                   {loading ? (
-                    <tr><td colSpan={4} className="text-center py-8"><Loader2 className="w-6 h-6 animate-spin mx-auto text-emerald-600" /></td></tr>
+                    <tr><td colSpan={5} className="text-center py-8"><Loader2 className="w-6 h-6 animate-spin mx-auto text-emerald-600" /></td></tr>
                   ) : filteredData.length === 0 ? (
-                    <tr><td colSpan={4} className="text-center py-8 text-slate-500">Tidak ada data MUI Kota.</td></tr>
+                    <tr><td colSpan={5} className="text-center py-8 text-slate-500">Tidak ada data MUI Kota.</td></tr>
                   ) : (
                     filteredData.map((item) => (
                       <tr key={item.id} className="hover:bg-slate-50">
                         <td className="px-4 py-3 font-bold text-slate-800 flex items-center gap-2">
                           <MapPin className="w-4 h-4 text-emerald-600" /> {item.kota}
                         </td>
-                        <td className="px-4 py-3">{item.alamat || '-'}</td>
-                        <td className="px-4 py-3">{item.no_telp || '-'}</td>
+                        <td className="px-4 py-3 text-center">
+                          <span className="bg-emerald-100 text-emerald-700 px-2 py-1 rounded font-bold text-xs">{item.pimpinan_count || 0}</span>
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded font-bold text-xs">{item.anggota_count || 0}</span>
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <span className="bg-slate-100 text-slate-700 px-2 py-1 rounded font-bold text-xs">{(item.pimpinan_count || 0) + (item.anggota_count || 0)}</span>
+                        </td>
                         <td className="px-4 py-3 text-right">
                           <div className="flex justify-end gap-2">
                             <Link href={`/${params.locale}/admin/muikota/${item.id}`}>
@@ -301,6 +356,7 @@ export default function MuiKotaManagementPage() {
             </div>
           </CardContent>
         </Card>
+        </div>
       ) : (
         <Card className="animate-in fade-in slide-in-from-bottom-4 duration-300">
           <CardHeader>

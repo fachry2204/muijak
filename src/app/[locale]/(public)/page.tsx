@@ -118,7 +118,7 @@ export default function HomePage() {
       {/* HERO SECTION */}
       <section className="relative bg-gradient-to-b from-[#043b23] to-[#0A6B41] pt-20 pb-40 overflow-hidden">
         {/* Pattern Background Overlay */}
-        <div className="absolute inset-0 opacity-10 pointer-events-none bg-[url('/gambar/patternbg.png')] bg-repeat" style={{ backgroundSize: '200px' }}></div>
+        <div className="absolute inset-0 opacity-10 pointer-events-none bg-[url(/gambar/patternbg.png)] bg-repeat" style={{ backgroundSize: '200px' }}></div>
         <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-[#047857]/30 to-transparent pointer-events-none"></div>
 
         <div className="max-w-[1200px] mx-auto px-4 relative z-10 flex flex-col lg:flex-row gap-12 items-center">
@@ -134,13 +134,13 @@ export default function HomePage() {
                 defaultText="Official Website Majelis Ulama Indonesia <br/> <span class='text-[#f59e0b]'>Provinsi DKI Jakarta.</span>" 
               />
             </h1>
-            <p className="text-emerald-100/90 text-lg md:text-xl mb-10 max-w-xl leading-relaxed">
+            <div className="text-emerald-100/90 text-lg md:text-xl mb-10 max-w-xl leading-relaxed">
               <LiveEdit 
                 id="hero_description" 
                 multiline 
                 defaultText="Satu portal digital MUI Provinsi DKI Jakarta untuk informasi, pelayanan, dan penguatan syiar Islam yang lebih cepat, transparan, dan terpercaya." 
               />
-            </p>
+            </div>
 
 
           </div>

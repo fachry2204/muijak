@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import axios from 'axios';
 import { Link } from '@/i18n/routing';
 import { ChevronRight, MapPin, Phone, Mail, Send, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -19,9 +20,23 @@ export default function KontakPage() {
   const [honeypot, setHoneypot] = useState('');
   const [mathError, setMathError] = useState(false);
 
+  const [settings, setSettings] = useState<Record<string, string>>({});
+
   useEffect(() => {
     setNum1(Math.floor(Math.random() * 10) + 1);
     setNum2(Math.floor(Math.random() * 10) + 1);
+
+    const fetchSettings = async () => {
+      try {
+        const res = await axios.get('/api/settings');
+        if (res.data.success) {
+          setSettings(res.data.data);
+        }
+      } catch (error) {
+        console.error('Failed to load settings', error);
+      }
+    };
+    fetchSettings();
   }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -58,7 +73,7 @@ export default function KontakPage() {
       
       {/* Page Header */}
       <div className="bg-gradient-to-b from-[#043b23] to-[#0A6B41] py-16 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10 pointer-events-none bg-[url('/gambar/patternbg.png')] bg-repeat" style={{ backgroundSize: '200px' }}></div>
+        <div className="absolute inset-0 opacity-10 pointer-events-none bg-[url(/gambar/patternbg.png)] bg-repeat" style={{ backgroundSize: '200px' }}></div>
         <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-[#047857]/30 to-transparent pointer-events-none"></div>
         <div className="max-w-[1200px] mx-auto px-4 relative z-10 text-center">
           <h1 className="text-4xl md:text-5xl font-black text-white mb-4 uppercase tracking-tight">Hubungi Kami</h1>
@@ -97,7 +112,7 @@ export default function KontakPage() {
                   <div>
                     <h4 className="font-bold text-slate-800 text-lg">Alamat Kantor</h4>
                     <p className="text-slate-600 leading-relaxed mt-1">
-                      Jl. Cikini Raya No.73, RT.1/RW.2, Cikini, Kec. Menteng, Kota Jakarta Pusat, Daerah Khusus Ibukota Jakarta 10330
+                      {settings.address || 'Jl. Cikini Raya No.73, RT.1/RW.2, Cikini, Kec. Menteng, Kota Jakarta Pusat, Daerah Khusus Ibukota Jakarta 10330'}
                     </p>
                   </div>
                 </div>
@@ -108,7 +123,7 @@ export default function KontakPage() {
                   </div>
                   <div>
                     <h4 className="font-bold text-slate-800 text-lg">Telepon</h4>
-                    <p className="text-slate-600 mt-1">(021) 3141151</p>
+                    <p className="text-slate-600 mt-1">{settings.phone || '(021) 3141151'}</p>
                   </div>
                 </div>
 
@@ -118,7 +133,7 @@ export default function KontakPage() {
                   </div>
                   <div>
                     <h4 className="font-bold text-slate-800 text-lg">Email</h4>
-                    <p className="text-slate-600 mt-1">sekretariat@muijakarta.or.id</p>
+                    <p className="text-slate-600 mt-1">{settings.email || 'sekretariat@muijakarta.or.id'}</p>
                   </div>
                 </div>
 
@@ -138,8 +153,8 @@ export default function KontakPage() {
 
             {/* Google Map Box */}
             <div className="w-full h-64 bg-slate-200 rounded-2xl overflow-hidden shadow-md border border-slate-200">
-               <iframe 
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3966.529806497262!2d106.83610991535496!3d-6.193600995516086!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69f4305bc9e273%3A0xc367d3b24bb8d4cc!2sKantor%20MUI%20DKI%20Jakarta!5e0!3m2!1sen!2sid!4v1689254011234!5m2!1sen!2sid" 
+              <iframe 
+                src={`https://maps.google.com/maps?q=${encodeURIComponent(settings.address || 'Kantor MUI DKI Jakarta')}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
                 width="100%" 
                 height="100%" 
                 style={{ border: 0 }} 

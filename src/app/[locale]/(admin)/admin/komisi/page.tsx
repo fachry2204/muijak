@@ -97,7 +97,12 @@ export default function KomisiManagementPage() {
         }
       });
 
-      if (newMembers.length > 0) setMembers(newMembers);
+      if (newMembers.length > 0) {
+        setMembers(prev => {
+          const validPrev = prev.filter(p => p.nama.trim() !== '');
+          return [...validPrev, ...newMembers];
+        });
+      }
       
       const newSubKomisi = Array.from(subMap.entries()).map(([name, membersArr]) => ({
         name,
@@ -105,7 +110,19 @@ export default function KomisiManagementPage() {
       }));
 
       if (newSubKomisi.length > 0) {
-        setSubKomisi(newSubKomisi);
+        setSubKomisi(prev => {
+          const updated = [...prev];
+          newSubKomisi.forEach(newSub => {
+            const existingIdx = updated.findIndex(u => u.name.toLowerCase() === newSub.name.toLowerCase());
+            if (existingIdx >= 0) {
+              const validPrevMembers = updated[existingIdx].members.filter((m: any) => m.nama.trim() !== '');
+              updated[existingIdx].members = [...validPrevMembers, ...newSub.members];
+            } else {
+              updated.push(newSub);
+            }
+          });
+          return updated.filter(u => u.name.trim() !== '' || u.members.some((m: any) => m.nama.trim() !== ''));
+        });
       }
 
       const totalBidang = newMembers.length;

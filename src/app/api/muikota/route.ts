@@ -3,7 +3,16 @@ import pool from '@/lib/db';
 
 export async function GET() {
   try {
-    const [rows]: any = await pool.query('SELECT * FROM mui_kota ORDER BY created_at DESC');
+    const query = `
+      SELECT 
+        mk.*,
+        (SELECT COUNT(*) FROM mui_kota_anggota mka WHERE mka.mui_kota_id = mk.id AND mka.status = 'Pimpinan') as pimpinan_count,
+        (SELECT COUNT(*) FROM mui_kota_anggota mka WHERE mka.mui_kota_id = mk.id AND mka.status != 'Pimpinan') as anggota_count,
+        (SELECT nama FROM mui_kota_anggota mka WHERE mka.mui_kota_id = mk.id AND mka.status = 'Pimpinan' AND (mka.jabatan LIKE '%Ketua Umum%' OR mka.jabatan LIKE '%Ketua%') LIMIT 1) as ketua_umum
+      FROM mui_kota mk
+      ORDER BY mk.created_at DESC
+    `;
+    const [rows]: any = await pool.query(query);
     return NextResponse.json({ success: true, data: rows });
   } catch (error) {
     console.error('Error fetching MUI Kota:', error);

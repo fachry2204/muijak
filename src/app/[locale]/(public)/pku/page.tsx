@@ -9,7 +9,7 @@ export default function PKUPage() {
     <div className="bg-slate-50 min-h-screen pb-20">
       
       {/* Header */}
-      <div className="bg-[#1a1a1a]/80 py-20 relative overflow-hidden bg-[url('/gambar/bread.jpg')] bg-cover bg-center bg-blend-overlay">
+      <div className="bg-[#1a1a1a]/80 py-20 relative overflow-hidden bg-[url(/gambar/bread.jpg)] bg-cover bg-center bg-blend-overlay">
         <div className="max-w-[1200px] mx-auto px-4 relative z-10 flex flex-col md:flex-row items-center justify-between">
           <div className="md:w-2/3">
             <span className="bg-purple-600 text-white px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest mb-4 inline-block">Beasiswa & Riset</span>
