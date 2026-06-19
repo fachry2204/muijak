@@ -57,7 +57,9 @@ export default function KontakPage() {
     <div className="bg-slate-50 min-h-screen pb-20">
       
       {/* Page Header */}
-      <div className="bg-[#0b3c22]/90 py-16 relative overflow-hidden bg-[url('/gambar/bread.jpg')] bg-cover bg-center bg-blend-overlay">
+      <div className="bg-gradient-to-b from-[#043b23] to-[#0A6B41] py-16 relative overflow-hidden">
+        <div className="absolute inset-0 opacity-10 pointer-events-none bg-[url('/gambar/patternbg.png')] bg-repeat" style={{ backgroundSize: '200px' }}></div>
+        <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-[#047857]/30 to-transparent pointer-events-none"></div>
         <div className="max-w-[1200px] mx-auto px-4 relative z-10 text-center">
           <h1 className="text-4xl md:text-5xl font-black text-white mb-4 uppercase tracking-tight">Hubungi Kami</h1>
           <p className="text-emerald-100 text-lg max-w-2xl mx-auto">

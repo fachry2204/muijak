@@ -40,7 +40,7 @@ export default function AdminClientLayout({ children, session }: { children: Rea
       title: "ORGANIZATION",
       items: [
         { name: "Profil & Organisasi", href: "/admin/profil", icon: Building2 },
-        { name: "Komisi", href: "/admin/komisi", icon: UsersRound },
+        { name: "Bidang & Komisi", href: "/admin/komisi", icon: UsersRound },
         { name: "MUI Kota", href: "/admin/muikota", icon: MapPin }
       ]
     },

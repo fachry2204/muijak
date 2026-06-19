@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { HelpCircle, User, MapPin, Calendar, PlayCircle, ChevronDown, ChevronUp, Loader2, BookOpen, MessageCircle } from 'lucide-react';
+import { HelpCircle, User, MapPin, Calendar, PlayCircle, ChevronDown, ChevronUp, Loader2, BookOpen, MessageCircle, ChevronRight } from 'lucide-react';
+import { Link } from '@/i18n/routing';
 
 export default function JawabanUlamaPage() {
   const [items, setItems] = useState<any[]>([]);
@@ -55,13 +56,20 @@ export default function JawabanUlamaPage() {
 
       <div className="container mx-auto px-4 max-w-4xl -mt-8 relative z-20 pb-16">
         {/* Statistics Card */}
-        <div className="bg-white rounded-2xl p-6 shadow-xl shadow-slate-200/50 border border-slate-100 mb-8 flex items-center justify-center gap-6 text-center transform transition-all hover:-translate-y-1">
-          <div className="w-14 h-14 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center">
-            <MessageCircle className="w-7 h-7" />
+        <div className="bg-white rounded-2xl p-6 shadow-xl shadow-slate-200/50 border border-slate-100 mb-8 flex flex-col md:flex-row items-center justify-between gap-6 transform transition-all">
+          <div className="flex items-center gap-6">
+            <div className="w-14 h-14 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center shrink-0">
+              <MessageCircle className="w-7 h-7" />
+            </div>
+            <div className="text-center md:text-left">
+              <p className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-1">Total Pertanyaan Dijawab</p>
+              <p className="text-4xl font-black text-slate-800">{loading ? '-' : items.length}</p>
+            </div>
           </div>
           <div>
-            <p className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-1">Total Pertanyaan Dijawab</p>
-            <p className="text-4xl font-black text-slate-800">{loading ? '-' : items.length}</p>
+            <Link href="/tanya-ulama" className="bg-[#f59e0b] hover:bg-amber-600 text-white font-bold py-3.5 px-8 rounded-xl transition-colors shadow-lg hover:shadow-amber-500/30 flex items-center gap-2">
+              Kirim Pertanyaan <ChevronRight className="w-5 h-5" />
+            </Link>
           </div>
         </div>
 

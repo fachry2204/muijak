@@ -60,7 +60,7 @@ export function Footer() {
             <ul className="space-y-3">
               <li><Link href="/profil" className="hover:text-emerald-400 transition-colors">Profil Kami</Link></li>
               <li><Link href="/berita" className="hover:text-emerald-400 transition-colors">Berita Terbaru</Link></li>
-              <li><Link href="/komisi" className="hover:text-emerald-400 transition-colors">Komisi-Komisi</Link></li>
+              <li><Link href="/komisi" className="hover:text-emerald-400 transition-colors">Bidang & Komisi</Link></li>
               <li><Link href="/fatwa" className="hover:text-emerald-400 transition-colors">Kumpulan Fatwa</Link></li>
             </ul>
           </div>

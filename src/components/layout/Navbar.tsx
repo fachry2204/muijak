@@ -64,19 +64,18 @@ export function Navbar({ locale, dynamicMenus = [], session = null }: { locale: 
       href: '/profil', 
       label: 'Profil',
       subMenus: [
-        { href: '/profil', label: 'Profil Kami' },
-        { href: '/profil?tab=sejarah', label: 'Sejarah' },
-        { href: '/profil?tab=visimisi', label: 'Visi Misi' },
-        { href: '/profil?tab=pimpinan', label: 'Pimpinan' },
-        { href: '/profil?tab=anggota', label: 'Anggota MUI' },
-        { href: '/profil?tab=muikota', label: 'MUI Kota' }
+        { href: '/profil/sejarah', label: 'Sejarah' },
+        { href: '/profil/visi-misi', label: 'Visi Misi' },
+        { href: '/profil/pimpinan', label: 'Pimpinan' },
+        { href: '/direktori-anggota', label: 'Anggota MUI' },
+        { href: '/mui-kota', label: 'MUI Kota' }
       ]
     },
     { 
       href: '/berita', 
       label: 'Berita'
     },
-    { href: '/komisi', label: 'Komisi' },
+    { href: '/komisi', label: 'Bidang & Komisi' },
     { href: '/fatwa', label: 'Fatwa' },
     { href: '/galeri', label: 'Galeri' },
     { href: '/kontak', label: 'Kontak' },
@@ -102,7 +101,7 @@ export function Navbar({ locale, dynamicMenus = [], session = null }: { locale: 
   };
 
   return (
-    <header className="w-full bg-white text-[#074c2e] sticky top-0 z-50 shadow-sm border-b border-gray-100">
+    <header className="w-full bg-white text-[#074c2e] sticky top-0 z-50 shadow-sm border-b border-gray-100 relative">
       {/* Top Bar */}
       <div className="hidden md:flex bg-[#043b23] text-[11px] lg:text-xs py-2 px-4 justify-center gap-12 lg:gap-24 items-center text-emerald-100/90 font-medium tracking-wide">
         <div className="flex items-center gap-6">
@@ -183,36 +182,34 @@ export function Navbar({ locale, dynamicMenus = [], session = null }: { locale: 
             )
           })}
         </nav>
-
-        {/* Right Icons */}
-        <div className="hidden lg:flex items-center gap-5 ml-auto relative z-10">
-
-          <div className="w-px h-6 bg-gray-200 mx-2"></div>
-          <button className="text-[#074c2e] hover:text-emerald-500 transition-colors">
-            <Search className="w-5 h-5" />
-          </button>
-          {session ? (
-            <div className="flex items-center gap-3">
-              <Link href="/admin" className="flex items-center gap-2 text-[#074c2e] hover:text-emerald-500 font-bold text-sm">
-                <UserCircle className="w-5 h-5" /> {session.email.split('@')[0]}
-              </Link>
-              <button onClick={handleLogout} className="flex items-center gap-2 bg-red-600/90 hover:bg-red-600 text-white px-4 py-2 rounded-full font-bold transition-colors text-sm">
-                <LogOut className="w-4 h-4" /> Logout
-              </button>
-            </div>
-          ) : (
-            <Link href="/login" className="flex items-center gap-2 bg-[#d1a64b] text-white px-4 py-2 rounded-full font-bold hover:bg-emerald-600 transition-colors text-sm">
-              <UserCircle className="w-4 h-4" /> Login
-            </Link>
-          )}
-        </div>
-
-        {/* Mobile Toggle */}
-        <button className="lg:hidden text-[#074c2e]" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-          {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-        </button>
-
       </div>
+
+      {/* Right Icons (Absolute to Header) */}
+      <div className="hidden xl:flex items-center gap-5 absolute right-6 top-[40px] md:top-[60px] lg:top-[64px] -translate-y-1/2 z-20">
+        <div className="w-px h-6 bg-gray-200 mx-1"></div>
+        <button className="text-[#074c2e] hover:text-emerald-500 transition-colors">
+          <Search className="w-5 h-5" />
+        </button>
+        {session ? (
+          <div className="flex items-center gap-3">
+            <Link href="/admin" className="flex items-center gap-2 text-[#074c2e] hover:text-emerald-500 font-bold text-sm">
+              <UserCircle className="w-5 h-5" /> {session.email.split('@')[0]}
+            </Link>
+            <button onClick={handleLogout} className="flex items-center gap-2 bg-red-600/90 hover:bg-red-600 text-white px-4 py-2 rounded-full font-bold transition-colors text-sm shadow-sm">
+              <LogOut className="w-4 h-4" /> Logout
+            </button>
+          </div>
+        ) : (
+          <Link href="/login" className="flex items-center gap-2 bg-[#d1a64b] text-white px-4 py-2 rounded-full font-bold hover:bg-emerald-600 transition-colors text-sm shadow-sm">
+            <UserCircle className="w-4 h-4" /> Login
+          </Link>
+        )}
+      </div>
+
+      {/* Mobile Toggle */}
+      <button className="lg:hidden text-[#074c2e] absolute right-4 top-[40px] md:top-[60px] lg:top-[64px] -translate-y-1/2" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+        {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+      </button>
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (

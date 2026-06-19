@@ -40,9 +40,8 @@ export default function PublicGaleriPage() {
       
       {/* Hero / Breadcrumb Gradient Header */}
       <div className="bg-gradient-to-b from-[#043b23] to-[#0A6B41] pt-16 pb-28 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10 pointer-events-none" 
-             style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '40px 40px' }}>
-        </div>
+        <div className="absolute inset-0 opacity-10 pointer-events-none bg-[url('/gambar/patternbg.png')] bg-repeat" style={{ backgroundSize: '200px' }}></div>
+        <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-[#047857]/30 to-transparent pointer-events-none"></div>
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-4 text-emerald-300">Galeri MUI DKI Jakarta</h1>
           <p className="text-lg text-emerald-100/90 max-w-2xl mx-auto">

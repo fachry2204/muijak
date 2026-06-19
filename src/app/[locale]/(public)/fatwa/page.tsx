@@ -67,12 +67,9 @@ export default function FatwaPage() {
     <div className="min-h-screen bg-slate-50 pb-12">
       
       {/* Header Section with Dark Green Gradient */}
-      <div className="bg-gradient-to-br from-[#022c22] via-[#064e3b] to-[#047857] pt-20 pb-24 relative overflow-hidden">
-        {/* Abstract shapes for decoration */}
-        <div className="absolute top-0 left-0 w-full h-full overflow-hidden opacity-20 pointer-events-none">
-          <div className="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-emerald-400 blur-3xl"></div>
-          <div className="absolute bottom-0 right-0 w-[500px] h-[500px] rounded-full bg-[#d1a64b] blur-3xl opacity-30"></div>
-        </div>
+      <div className="bg-gradient-to-b from-[#043b23] to-[#0A6B41] pt-20 pb-24 relative overflow-hidden">
+        <div className="absolute inset-0 opacity-10 pointer-events-none bg-[url('/gambar/patternbg.png')] bg-repeat" style={{ backgroundSize: '200px' }}></div>
+        <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-[#047857]/30 to-transparent pointer-events-none"></div>
 
         <div className="container mx-auto px-4 max-w-6xl relative z-10 text-center">
           <div className="inline-block bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-4 py-1.5 mb-6 text-emerald-100 text-sm font-bold tracking-wider">

@@ -15,24 +15,33 @@ export async function POST(request: Request) {
   const connection = await pool.getConnection();
   try {
     await connection.beginTransaction();
-    const { kota, alamat, no_telp, anggota } = await request.json();
+    const { kota, alamat, no_telp, anggota, pimpinan, map_lat, map_lng } = await request.json();
 
     if (!kota) {
       return NextResponse.json({ success: false, error: 'Nama Kota wajib diisi' }, { status: 400 });
     }
 
     const [result]: any = await connection.query(
-      'INSERT INTO mui_kota (kota, alamat, no_telp) VALUES (?, ?, ?)',
-      [kota, alamat || '', no_telp || '']
+      'INSERT INTO mui_kota (kota, alamat, no_telp, map_lat, map_lng) VALUES (?, ?, ?, ?, ?)',
+      [kota, alamat || '', no_telp || '', map_lat || -6.200000, map_lng || 106.816666]
     );
 
     const muiKotaId = result.insertId;
+
+    if (pimpinan && Array.isArray(pimpinan) && pimpinan.length > 0) {
+      for (const p of pimpinan) {
+        await connection.query(
+          'INSERT INTO mui_kota_anggota (mui_kota_id, nama, jabatan, bidang, no_hp, status) VALUES (?, ?, ?, ?, ?, ?)',
+          [muiKotaId, p.nama, p.jabatan || '', '', p.no_hp || '', 'Pimpinan']
+        );
+      }
+    }
 
     if (anggota && Array.isArray(anggota) && anggota.length > 0) {
       for (const agt of anggota) {
         await connection.query(
           'INSERT INTO mui_kota_anggota (mui_kota_id, nama, jabatan, bidang, no_hp, status) VALUES (?, ?, ?, ?, ?, ?)',
-          [muiKotaId, agt.nama, agt.jabatan || '', agt.bidang || '', agt.no_hp || '', agt.status || 'Aktif']
+          [muiKotaId, agt.nama, agt.jabatan || '', agt.bidang || '', agt.no_hp || '', 'Anggota']
         );
       }
     }

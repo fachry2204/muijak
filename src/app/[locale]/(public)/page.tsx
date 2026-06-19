@@ -3,6 +3,7 @@
 import { Link } from '@/i18n/routing';
 import { useState, useEffect } from 'react';
 import { Search, HelpCircle, Book, Users, ChevronRight, PlayCircle, Calendar, Quote, ShieldCheck, Download, MapPin, Mail, FileText, Eye } from 'lucide-react';
+import { LiveEdit } from '@/components/ui/LiveEdit';
 
 const Instagram = ({ className }: { className?: string }) => (
   <svg xmlns="http://www.w3.org/2000/svg" className={className} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5" /><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" /><line x1="17.5" x2="17.51" y1="6.5" y2="6.5" /></svg>
@@ -125,30 +126,23 @@ export default function HomePage() {
           {/* Left Hero Content */}
           <div className="lg:w-[60%]">
             <span className="inline-block bg-[#047857]/50 text-emerald-50 text-sm font-semibold px-4 py-1.5 rounded-full mb-6 border border-[#047857]">
-              MUI Provinsi DKI Jakarta
+              <LiveEdit id="hero_badge" defaultText="MUI Provinsi DKI Jakarta" />
             </span>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight mb-6">
-              Khidmah Ulama untuk <br />
-              <span className="text-[#f59e0b]">Provinsi DKI Jakarta.</span>
+              <LiveEdit 
+                id="hero_title" 
+                defaultText="Official Website Majelis Ulama Indonesia <br/> <span class='text-[#f59e0b]'>Provinsi DKI Jakarta.</span>" 
+              />
             </h1>
             <p className="text-emerald-100/90 text-lg md:text-xl mb-10 max-w-xl leading-relaxed">
-              Pusat informasi, fatwa, dan layanan digital Majelis Ulama Indonesia Provinsi DKI Jakarta untuk kemaslahatan umat.
+              <LiveEdit 
+                id="hero_description" 
+                multiline 
+                defaultText="Satu portal digital MUI Provinsi DKI Jakarta untuk informasi, pelayanan, dan penguatan syiar Islam yang lebih cepat, transparan, dan terpercaya." 
+              />
             </p>
 
-            {/* Search Bar */}
-            <div className="flex bg-white rounded-lg p-1.5 shadow-xl max-w-lg focus-within:ring-4 focus-within:ring-[#f59e0b]/50 transition-shadow">
-              <div className="flex items-center pl-4 pr-2 text-slate-400">
-                <Search className="w-5 h-5" />
-              </div>
-              <input
-                type="text"
-                placeholder="Cari fatwa, berita, atau direktori..."
-                className="flex-1 bg-transparent border-none outline-none text-slate-700 py-3 font-medium placeholder:font-normal"
-              />
-              <button className="bg-[#f59e0b] hover:bg-[#d97706] text-white font-bold px-8 rounded-md transition-colors shadow-sm">
-                Cari
-              </button>
-            </div>
+
           </div>
 
           {/* Right Hero Content */}

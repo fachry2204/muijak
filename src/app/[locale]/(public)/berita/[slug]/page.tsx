@@ -117,17 +117,23 @@ export default function ReadNewsPage() {
           {/* Related News */}
           <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
             <h3 className="text-xl font-bold border-l-4 border-emerald-600 pl-3 mb-6">Berita Terkait</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {allNews.filter(n => n.id !== article.id).slice(0, 4).map((related) => (
-                <Link href={`/berita/${related.slug}`} key={related.id} className="group cursor-pointer">
-                  <div className="rounded-lg overflow-hidden mb-2 aspect-video">
-                    <img src={related.image_url} alt={related.title_id} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                  </div>
-                  <h4 className="font-bold text-sm text-slate-800 leading-snug group-hover:text-emerald-600 transition-colors line-clamp-2">
-                    {related.title_id}
-                  </h4>
-                </Link>
-              ))}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+              {allNews.filter(n => n.id !== article.id).slice(0, 8).map((related) => {
+                const excerpt = related.content_id ? related.content_id.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').substring(0, 120) + '...' : '';
+                return (
+                  <Link href={`/berita/${related.slug}`} key={related.id} className="group cursor-pointer flex flex-col h-full">
+                    <div className="rounded-lg overflow-hidden mb-3 aspect-[4/3] shrink-0">
+                      <img src={related.image_url} alt={related.title_id} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    </div>
+                    <h4 className="font-bold text-[14px] text-slate-800 leading-snug group-hover:text-emerald-600 transition-colors line-clamp-2 mb-2">
+                      {related.title_id}
+                    </h4>
+                    <p className="text-xs text-slate-500 line-clamp-2 mt-auto leading-relaxed">
+                      {excerpt}
+                    </p>
+                  </Link>
+                );
+              })}
             </div>
           </div>
           

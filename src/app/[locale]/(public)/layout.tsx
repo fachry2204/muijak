@@ -4,6 +4,7 @@ import { ReactNode } from 'react';
 import pool from '@/lib/db';
 import { LanguageSwitcher } from '@/components/layout/LanguageSwitcher';
 import { getSession } from '@/lib/auth';
+import { PageContentProvider } from '@/components/providers/PageContentProvider';
 
 export default async function PublicLayout({
   children,
@@ -30,12 +31,14 @@ export default async function PublicLayout({
       <div className="fixed inset-0 opacity-[0.03] pointer-events-none bg-[url('/gambar/patternbg.png')] bg-repeat z-0" style={{ backgroundSize: '300px' }}></div>
       
       <div className="relative z-10 flex flex-col min-h-screen w-full">
-        <Navbar locale={locale} dynamicMenus={dbMenus} session={session} />
-        <main className="flex-grow">
-          {children}
-        </main>
-        <Footer />
-        <LanguageSwitcher />
+        <PageContentProvider session={session}>
+          <Navbar locale={locale} dynamicMenus={dbMenus} session={session} />
+          <main className="flex-grow">
+            {children}
+          </main>
+          <Footer />
+          <LanguageSwitcher />
+        </PageContentProvider>
       </div>
     </div>
   );
