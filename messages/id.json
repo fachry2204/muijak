@@ -1,0 +1,16 @@
+{
+  "HomePage": {
+    "title": "MUI DKI Jakarta",
+    "description": "Website Resmi Majelis Ulama Indonesia Provinsi DKI Jakarta"
+  },
+  "Navigation": {
+    "home": "Beranda",
+    "news": "Berita",
+    "profile": "Profil",
+    "commission": "Komisi",
+    "halal": "Halal",
+    "pku": "PKU",
+    "contact": "Kontak",
+    "login": "Login"
+  }
+}

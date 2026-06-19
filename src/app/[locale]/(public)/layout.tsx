@@ -1,0 +1,37 @@
+import { Navbar } from '@/components/layout/Navbar';
+import { Footer } from '@/components/layout/Footer';
+import { ReactNode } from 'react';
+import pool from '@/lib/db';
+import { LanguageSwitcher } from '@/components/layout/LanguageSwitcher';
+import { getSession } from '@/lib/auth';
+
+export default async function PublicLayout({
+  children,
+  params
+}: {
+  children: ReactNode;
+  params: Promise<{locale: string}>;
+}) {
+  const { locale } = await params;
+  const session = await getSession();
+  
+  // Fetch dynamic menus from database
+  let dbMenus: any[] = [];
+  try {
+    const [rows]: any = await pool.query('SELECT * FROM menus ORDER BY parent_id ASC, order_index ASC');
+    dbMenus = rows;
+  } catch (error) {
+    console.error("Failed to load menus in layout");
+  }
+
+  return (
+    <div className="flex flex-col min-h-screen">
+      <Navbar locale={locale} dynamicMenus={dbMenus} session={session} />
+      <main className="flex-grow">
+        {children}
+      </main>
+      <Footer />
+      <LanguageSwitcher />
+    </div>
+  );
+}

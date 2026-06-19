@@ -1,0 +1,16 @@
+{
+  "HomePage": {
+    "title": "MUI DKI Jakarta",
+    "description": "Official Website of the Indonesian Ulema Council of DKI Jakarta Province"
+  },
+  "Navigation": {
+    "home": "Home",
+    "news": "News",
+    "profile": "Profile",
+    "commission": "Commission",
+    "halal": "Halal",
+    "pku": "PKU",
+    "contact": "Contact",
+    "login": "Login"
+  }
+}
