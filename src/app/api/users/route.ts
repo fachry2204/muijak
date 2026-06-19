@@ -3,8 +3,15 @@ import pool from '@/lib/db';
 import bcrypt from 'bcryptjs';
 import { RowDataPacket } from 'mysql2';
 
+import { getSession } from '@/lib/auth';
+
 export async function GET() {
   try {
+    const session = await getSession();
+    if (!session || session.role !== 'ADMIN') {
+      return NextResponse.json({ success: false, message: 'Forbidden' }, { status: 403 });
+    }
+
     const [rows] = await pool.query<RowDataPacket[]>('SELECT id, name, email, role, created_at, status FROM users ORDER BY created_at DESC');
     return NextResponse.json({ success: true, data: rows });
   } catch (error: any) {
@@ -15,6 +22,11 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    const session = await getSession();
+    if (!session || session.role !== 'ADMIN') {
+      return NextResponse.json({ success: false, message: 'Forbidden' }, { status: 403 });
+    }
+
     const body = await request.json();
     const { name, email, password, role } = body;
 

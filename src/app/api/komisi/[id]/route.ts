@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
 import { RowDataPacket } from 'mysql2';
+import { getSession } from '@/lib/auth';
 
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
@@ -75,6 +76,11 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   try {
+    const session = await getSession();
+    if (!session || session.role !== 'ADMIN') {
+      return NextResponse.json({ success: false, error: 'Unauthorized. Only ADMIN can perform this action.' }, { status: 403 });
+    }
+
     await pool.query('DELETE FROM komisi WHERE id = ?', [params.id]);
     return NextResponse.json({ success: true });
   } catch (error) {

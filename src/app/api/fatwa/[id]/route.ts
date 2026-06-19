@@ -1,9 +1,15 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
 import { RowDataPacket } from 'mysql2';
+import { getSession } from '@/lib/auth';
 
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   try {
+    const session = await getSession();
+    if (!session || session.role !== 'ADMIN') {
+      return NextResponse.json({ success: false, error: 'Unauthorized. Only ADMIN can perform this action.' }, { status: 403 });
+    }
+
     const id = params.id;
     
     // Check if exists

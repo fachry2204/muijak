@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
 import { RowDataPacket } from 'mysql2';
+import { isFileSafe } from '@/lib/fileUpload';
 
 export async function GET() {
   try {
@@ -32,6 +33,9 @@ export async function POST(request: Request) {
         if (value instanceof File) {
           if (value.size > 0) {
             const ext = path.extname(value.name) || '.png';
+        if (!isFileSafe(value.name)) {
+          return NextResponse.json({ success: false, error: 'File type not allowed' }, { status: 400 });
+        }
             const fileName = `${key}-${Date.now()}${ext}`;
             const dirPath = path.join(process.cwd(), 'public', 'uploads');
             

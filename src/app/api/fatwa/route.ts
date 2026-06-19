@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
 import { RowDataPacket } from 'mysql2';
+import { isFileSafe } from '@/lib/fileUpload';
 
 export async function GET() {
   try {
@@ -38,6 +39,9 @@ export async function POST(request: Request) {
       
       if (file && file.size > 0) {
         const ext = path.extname(file.name) || '.pdf';
+        if (!isFileSafe(file.name)) {
+          return NextResponse.json({ success: false, error: 'File type not allowed' }, { status: 400 });
+        }
         const fileName = `fatwa-${Date.now()}${ext}`;
         const dirPath = path.join(process.cwd(), 'public', 'fatwa', 'dokumen');
         

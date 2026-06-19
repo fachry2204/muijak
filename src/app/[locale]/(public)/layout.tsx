@@ -28,7 +28,7 @@ export default async function PublicLayout({
   return (
     <div className="bg-[#f8fafc] min-h-screen relative">
       {/* Global Islamic Pattern Background */}
-      <div className="fixed inset-0 opacity-[0.03] pointer-events-none bg-[url('/gambar/patternbg.png')] bg-repeat z-0" style={{ backgroundSize: '300px' }}></div>
+      <div className="fixed inset-0 opacity-[0.03] pointer-events-none bg-[url(/gambar/patternbg.png)] bg-repeat z-0" style={{ backgroundSize: '300px' }}></div>
       
       <div className="relative z-10 flex flex-col min-h-screen w-full">
         <PageContentProvider session={session}>

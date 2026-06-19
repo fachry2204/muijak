@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
+import { getSession } from '@/lib/auth';
+import { isFileSafe } from '@/lib/fileUpload';
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -39,6 +41,9 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 
       if (file && file.size > 0) {
         const ext = path.extname(file.name) || '.jpg';
+        if (!isFileSafe(file.name)) {
+          return NextResponse.json({ success: false, error: 'File type not allowed' }, { status: 400 });
+        }
         const fileName = `ulama-${id}-${Date.now()}${ext}`;
         const dirPath = path.join(process.cwd(), 'public', 'gambar', 'ulama');
         
@@ -81,6 +86,11 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 }
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const session = await getSession();
+    if (!session || session.role !== 'ADMIN') {
+      return NextResponse.json({ success: false, error: 'Unauthorized. Only ADMIN can perform this action.' }, { status: 403 });
+    }
+
     const { id } = await params;
     await pool.query('DELETE FROM pertanyaan_umat WHERE id = ?', [id]);
     return NextResponse.json({ success: true, message: 'Data berhasil dihapus' });

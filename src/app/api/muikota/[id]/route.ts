@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
+import { getSession } from '@/lib/auth';
 
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   const connection = await pool.getConnection();

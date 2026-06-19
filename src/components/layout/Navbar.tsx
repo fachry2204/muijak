@@ -131,7 +131,8 @@ export function Navbar({ locale, dynamicMenus = [], session = null }: { locale: 
           </div>
         </div>
       </div>
-      <div className="max-w-[1200px] mx-auto px-4 h-20 flex items-center relative w-full">
+      <div className="relative w-full h-20">
+        <div className="max-w-[1200px] mx-auto px-4 h-full flex items-center w-full">
         
         {/* Logo */}
         <Link href="/" className="flex items-center gap-3 relative z-10 mr-12">
@@ -182,29 +183,32 @@ export function Navbar({ locale, dynamicMenus = [], session = null }: { locale: 
             )
           })}
         </nav>
+        </div>
+
+        {/* Right Icons (Desktop) */}
+        <div className="hidden xl:flex items-center gap-5 absolute right-6 md:right-8 top-1/2 -translate-y-1/2 z-20">
+          <div className="w-px h-6 bg-gray-200 mx-1"></div>
+          <button className="text-[#074c2e] hover:text-emerald-500 transition-colors">
+            <Search className="w-5 h-5" />
+          </button>
+          {session ? (
+            <div className="flex items-center gap-3">
+              <Link href="/admin" className="flex items-center gap-2 text-[#074c2e] hover:text-emerald-500 font-bold text-sm">
+                <UserCircle className="w-5 h-5" /> {session.email.split('@')[0]}
+              </Link>
+              <button onClick={handleLogout} className="flex items-center gap-2 bg-red-600/90 hover:bg-red-600 text-white px-4 py-2 rounded-full font-bold transition-colors text-sm shadow-sm">
+                <LogOut className="w-4 h-4" /> Logout
+              </button>
+            </div>
+          ) : (
+            <Link href="/login" className="flex items-center gap-2 bg-[#d1a64b] text-white px-4 py-2 rounded-full font-bold hover:bg-emerald-600 transition-colors text-sm shadow-sm">
+              <UserCircle className="w-4 h-4" /> Login
+            </Link>
+          )}
+        </div>
       </div>
 
-      {/* Right Icons (Absolute to Header) */}
-      <div className="hidden xl:flex items-center gap-5 absolute right-6 top-[40px] md:top-[60px] lg:top-[64px] -translate-y-1/2 z-20">
-        <div className="w-px h-6 bg-gray-200 mx-1"></div>
-        <button className="text-[#074c2e] hover:text-emerald-500 transition-colors">
-          <Search className="w-5 h-5" />
-        </button>
-        {session ? (
-          <div className="flex items-center gap-3">
-            <Link href="/admin" className="flex items-center gap-2 text-[#074c2e] hover:text-emerald-500 font-bold text-sm">
-              <UserCircle className="w-5 h-5" /> {session.email.split('@')[0]}
-            </Link>
-            <button onClick={handleLogout} className="flex items-center gap-2 bg-red-600/90 hover:bg-red-600 text-white px-4 py-2 rounded-full font-bold transition-colors text-sm shadow-sm">
-              <LogOut className="w-4 h-4" /> Logout
-            </button>
-          </div>
-        ) : (
-          <Link href="/login" className="flex items-center gap-2 bg-[#d1a64b] text-white px-4 py-2 rounded-full font-bold hover:bg-emerald-600 transition-colors text-sm shadow-sm">
-            <UserCircle className="w-4 h-4" /> Login
-          </Link>
-        )}
-      </div>
+
 
       {/* Mobile Toggle */}
       <button className="lg:hidden text-[#074c2e] absolute right-4 top-[40px] md:top-[60px] lg:top-[64px] -translate-y-1/2" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
