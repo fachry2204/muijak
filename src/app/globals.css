@@ -126,8 +126,19 @@
   }
   body {
     @apply bg-background text-foreground;
+    /* Mencegah scroll horizontal dan ruang putih ekstra akibat elemen fixed/absolute */
+    overflow-x: hidden;
   }
   html {
     @apply font-sans;
+    overflow-x: hidden;
+  }
+
+  /* Pastikan elemen fixed tidak menambah tinggi scroll halaman */
+  .fixed {
+    pointer-events: none;
+  }
+  .fixed > * {
+    pointer-events: auto;
   }
 }

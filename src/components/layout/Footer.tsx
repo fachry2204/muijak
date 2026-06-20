@@ -1,10 +1,12 @@
 "use client";
 
-import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
 import { MessageCircle, Globe, Share2, Tv, MapPin, Phone, Mail } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import dynamic from 'next/dynamic';
+
+const FooterMap = dynamic(() => import('@/components/ui/FooterMap'), { ssr: false });
 
 export function Footer() {
   const [settings, setSettings] = useState<Record<string, string>>({});
@@ -87,23 +89,19 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Map / Newsletter */}
+          {/* Map */}
           <div>
             <h3 className="text-white font-bold text-lg mb-6 flex items-center gap-2">
               <span className="w-1.5 h-6 bg-emerald-500 rounded-full block"></span>
               Lokasi
             </h3>
-            <div className="w-full h-40 bg-slate-800 rounded-lg overflow-hidden border border-slate-700">
-               {/* Embed Google Maps dynamically */}
-               <iframe 
-                src={`https://maps.google.com/maps?q=${encodeURIComponent(settings.address || 'Kantor MUI DKI Jakarta')}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
-                width="100%" 
-                height="100%" 
-                style={{ border: 0 }} 
-                allowFullScreen={true} 
-                loading="lazy" 
-                referrerPolicy="no-referrer-when-downgrade"
-              ></iframe>
+            <div className="w-full h-44 rounded-lg overflow-hidden border border-slate-700">
+              <FooterMap
+                lat={-6.1252}
+                lng={106.8738}
+                zoom={15}
+                label="MUI DKI Jakarta"
+              />
             </div>
           </div>
         </div>

@@ -3,7 +3,7 @@ import pool from '@/lib/db';
 import { RowDataPacket } from 'mysql2';
 import fs from 'fs';
 import path from 'path';
-import { isFileSafe } from '@/lib/fileUpload';
+import { validateUploadedFile } from '@/lib/fileUpload';
 
 export async function GET() {
   try {
@@ -44,9 +44,10 @@ export async function POST(request: Request) {
       for (const file of files) {
         if (file && file.size > 0) {
           const ext = path.extname(file.name) || '.png';
-        if (!isFileSafe(file.name)) {
-          return NextResponse.json({ success: false, error: 'File type not allowed' }, { status: 400 });
-        }
+          const validation = await validateUploadedFile(file, ['image/jpeg', 'image/png', 'image/gif', 'image/webp']);
+          if (!validation.valid) {
+            return NextResponse.json({ success: false, error: validation.reason || 'File type not allowed' }, { status: 400 });
+          }
           
           let fileName = `${safeFolder}-${index}${ext}`;
           // Make sure filename is unique if adding to same album later

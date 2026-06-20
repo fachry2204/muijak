@@ -51,7 +51,7 @@ const nextConfig: NextConfig = {
           },
           {
             key: 'Content-Security-Policy',
-            value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://translate.google.com translate.googleapis.com; style-src 'self' 'unsafe-inline' https://translate.googleapis.com https://fonts.googleapis.com; img-src 'self' data: blob: https: http:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https: http:; frame-src 'self' https://translate.google.com;",
+            value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://translate.google.com translate.googleapis.com; style-src 'self' 'unsafe-inline' https://translate.googleapis.com https://fonts.googleapis.com; img-src 'self' data: blob: https: http:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https: http:; frame-src 'self' https://translate.google.com https://www.openstreetmap.org https://maps.google.com;",
           },
         ],
       },

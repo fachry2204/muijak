@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
 import { RowDataPacket } from 'mysql2';
-import { isFileSafe } from '@/lib/fileUpload';
+import { validateUploadedFile } from '@/lib/fileUpload';
 
 export async function GET() {
   try {
@@ -56,9 +56,10 @@ export async function POST(request: Request) {
     let imageUrl = null;
     if (imageMain && imageMain.size > 0) {
       const ext = path.extname(imageMain.name) || '.jpg';
-        if (!isFileSafe(imageMain.name)) {
-          return NextResponse.json({ success: false, error: 'File type not allowed' }, { status: 400 });
-        }
+      const validation = await validateUploadedFile(imageMain, ['image/jpeg', 'image/png', 'image/webp']);
+      if (!validation.valid) {
+        return NextResponse.json({ success: false, error: validation.reason || 'File type not allowed' }, { status: 400 });
+      }
       const mainFileName = `MUI Jakarta-${safeTitle}-utama${ext}`;
       const buffer = Buffer.from(await imageMain.arrayBuffer());
       fs.writeFileSync(path.join(mainDir, mainFileName), buffer);
@@ -85,8 +86,9 @@ export async function POST(request: Request) {
     for (const file of galleryFiles) {
       if (file.size > 0) {
         const ext = path.extname(file.name) || '.jpg';
-        if (!isFileSafe(file.name)) {
-          return NextResponse.json({ success: false, error: 'File type not allowed' }, { status: 400 });
+        const validation = await validateUploadedFile(file, ['image/jpeg', 'image/png', 'image/webp']);
+        if (!validation.valid) {
+          return NextResponse.json({ success: false, error: validation.reason || 'File type not allowed' }, { status: 400 });
         }
         const galFileName = `MUI Jakarta-${safeTitle}-${galCount}${ext}`;
         const buffer = Buffer.from(await file.arrayBuffer());

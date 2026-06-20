@@ -260,15 +260,11 @@ export default function BeritaAdminPage() {
                       <TableCell>{item.published_at ? new Date(item.published_at).toLocaleDateString('id-ID') : (item.status === 'PUBLISHED' ? new Date(item.created_at).toLocaleDateString('id-ID') : '-')}</TableCell>
                       <TableCell>{item.created_at ? new Date(item.created_at).toLocaleDateString('id-ID') : '-'}</TableCell>
                       <TableCell className="text-right space-x-2">
-                        <a href={`/berita/${item.slug}`} target="_blank" rel="noreferrer">
-                          <Button variant="outline" size="icon" className="h-8 w-8 text-emerald-600 border-emerald-200 hover:bg-emerald-50">
-                            <Eye className="h-4 w-4" />
-                          </Button>
+                        <a href={`/berita/${item.slug}`} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center rounded-lg border border-emerald-200 bg-white hover:bg-emerald-50 text-emerald-600 h-8 w-8 transition-colors">
+                          <Eye className="h-4 w-4" />
                         </a>
-                        <Link href={`/admin/berita/edit/${item.id}`}>
-                          <Button variant="outline" size="icon" className="h-8 w-8 text-blue-600 border-blue-200 hover:bg-blue-50">
-                            <Edit className="h-4 w-4" />
-                          </Button>
+                        <Link href={`/admin/berita/edit/${item.id}`} className="inline-flex items-center justify-center rounded-lg border border-blue-200 bg-white hover:bg-blue-50 text-blue-600 h-8 w-8 transition-colors">
+                          <Edit className="h-4 w-4" />
                         </Link>
                         <Button onClick={() => handleDelete(item.id)} variant="outline" size="icon" className="h-8 w-8 text-red-600 border-red-200 hover:bg-red-50">
                           <Trash2 className="h-4 w-4" />

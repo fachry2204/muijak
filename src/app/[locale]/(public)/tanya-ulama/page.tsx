@@ -5,8 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Send, HelpCircle, Loader2 } from 'lucide-react';
+import { Send, HelpCircle, Loader2, ChevronRight } from 'lucide-react';
 import axios from 'axios';
+import Link from 'next/link';
 
 export default function TanyaUlamaPage() {
   const [form, setForm] = useState({
@@ -72,17 +73,29 @@ export default function TanyaUlamaPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 py-12">
-      <div className="container mx-auto px-4 max-w-3xl">
-        <div className="text-center mb-10">
-          <div className="w-16 h-16 bg-amber-100 text-amber-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <HelpCircle className="w-8 h-8" />
-          </div>
-          <h1 className="text-4xl font-bold text-slate-800 mb-4 font-['Arial']">Tanya Ulama Jakarta</h1>
-          <p className="text-slate-600 text-lg">
-            Layanan Pertanyaan Umat. Silakan sampaikan pertanyaan Anda terkait agama Islam kepada Majelis Ulama Indonesia.
+    <div className="min-h-screen bg-slate-50">
+
+      {/* Page Header — sama persis dengan halaman Berita */}
+      <div className="bg-gradient-to-b from-[#043b23] to-[#0A6B41] pt-16 pb-20 relative overflow-hidden">
+        <div className="absolute inset-0 opacity-10 pointer-events-none bg-[url(/gambar/patternbg.png)] bg-repeat"
+             style={{ backgroundSize: '200px' }}>
+        </div>
+        <div className="max-w-[1200px] mx-auto px-4 relative z-10 text-center">
+          {/* Breadcrumb */}
+          <nav className="flex items-center justify-center gap-2 text-sm text-emerald-200/70 mb-5">
+            <Link href="/" className="hover:text-amber-300 transition-colors">Beranda</Link>
+            <ChevronRight className="w-3.5 h-3.5 text-emerald-500" />
+            <span className="text-amber-300 font-semibold">Tanya Ulama</span>
+          </nav>
+          <h1 className="text-4xl md:text-5xl font-black text-emerald-300 mb-4 uppercase tracking-tight">Tanya Ulama Jakarta</h1>
+          <p className="text-emerald-100/90 text-lg max-w-2xl mx-auto">
+            Sampaikan pertanyaan Anda seputar agama Islam kepada para ulama dan tim fatwa Majelis Ulama Indonesia Provinsi DKI Jakarta.
           </p>
         </div>
+      </div>
+
+      {/* ── Form Section ───────────────────────────────────────────── */}
+      <div className="container mx-auto px-4 max-w-3xl py-12">
 
         <Card className="border-t-4 border-t-amber-500 shadow-lg">
           <CardHeader className="bg-slate-50/50 border-b border-slate-100 pb-6">

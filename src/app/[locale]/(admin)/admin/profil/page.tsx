@@ -16,7 +16,25 @@ export default function ProfilManagementPage() {
   const [misiList, setMisiList] = useState<string[]>(['']);
   const [isSaving, setIsSaving] = useState(false);
 
+  const [leaders, setLeaders] = useState<any[]>([]);
+  const [showLeaderModal, setShowLeaderModal] = useState(false);
+  const [editingLeaderId, setEditingLeaderId] = useState<string | null>(null);
+  const [leaderForm, setLeaderForm] = useState({ name: '', position_id: '', image_url: '' });
+  const [leaderFile, setLeaderFile] = useState<File | null>(null);
+
+  const fetchLeaders = async () => {
+    try {
+      const res = await axios.get('/api/leaders');
+      if (res.data.success) {
+        setLeaders(res.data.data);
+      }
+    } catch (error) {
+      console.error('Failed to load leaders');
+    }
+  };
+
   useEffect(() => {
+    fetchLeaders();
     const fetchSettings = async () => {
       try {
         const res = await axios.get('/api/settings');
@@ -77,12 +95,65 @@ export default function ProfilManagementPage() {
     setMisiList(newMisi);
   };
 
+  const handleOpenLeaderModal = (leader: any = null) => {
+    if (leader) {
+      setEditingLeaderId(leader.id);
+      setLeaderForm({ name: leader.name, position_id: leader.position_id, image_url: leader.image_url || '' });
+    } else {
+      setEditingLeaderId(null);
+      setLeaderForm({ name: '', position_id: '', image_url: '' });
+    }
+    setLeaderFile(null);
+    setShowLeaderModal(true);
+  };
+
+  const handleSaveLeader = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSaving(true);
+    try {
+      const formData = new FormData();
+      formData.append('name', leaderForm.name);
+      formData.append('position_id', leaderForm.position_id);
+      if (leaderFile) {
+        formData.append('image', leaderFile);
+      } else if (leaderForm.image_url) {
+        formData.append('image_url', leaderForm.image_url);
+      }
+      
+      if (editingLeaderId) {
+        await axios.put(`/api/leaders/${editingLeaderId}`, formData);
+        alert('Pimpinan berhasil diperbarui!');
+      } else {
+        await axios.post('/api/leaders', formData);
+        alert('Pimpinan berhasil ditambahkan!');
+      }
+      setShowLeaderModal(false);
+      fetchLeaders();
+    } catch (error) {
+      alert('Gagal menyimpan data pimpinan');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleDeleteLeader = async (id: string) => {
+    if (confirm('Apakah Anda yakin ingin menghapus data pimpinan ini?')) {
+      try {
+        await axios.delete(`/api/leaders/${id}`);
+        alert('Pimpinan berhasil dihapus!');
+        fetchLeaders();
+      } catch (error) {
+        alert('Gagal menghapus data pimpinan');
+      }
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-slate-800">Manajemen Profil & Organisasi</h1>
-          <p className="text-slate-500 mt-1">Kelola sejarah, visi misi, data pimpinan, dan direktori anggota MUI DKI Jakarta.</p>
+          <p className="text-slate-500 mt-1">Kelola sejarah, visi misi, dan data pimpinan inti MUI DKI Jakarta.</p>
         </div>
       </div>
 
@@ -101,12 +172,6 @@ export default function ProfilManagementPage() {
             className={`flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all ${activeTab === 'pimpinan' ? 'bg-[#0F5132] text-white shadow-md' : 'bg-white border border-slate-200 hover:bg-slate-50 text-slate-700'}`}
           >
             <UserCheck className="w-5 h-5" /> Data Pimpinan
-          </button>
-          <button 
-            onClick={() => setActiveTab('anggota')} 
-            className={`flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all ${activeTab === 'anggota' ? 'bg-[#0F5132] text-white shadow-md' : 'bg-white border border-slate-200 hover:bg-slate-50 text-slate-700'}`}
-          >
-            <Users className="w-5 h-5" /> Direktori Anggota
           </button>
         </div>
 
@@ -191,81 +256,39 @@ export default function ProfilManagementPage() {
                     <CardTitle>Daftar Pimpinan</CardTitle>
                     <CardDescription>Ketua Umum, Wakil Ketua, dan Pengurus Inti</CardDescription>
                   </div>
-                  <Button className="bg-[#0F5132] hover:bg-[#167046]">
+                  <Button onClick={() => handleOpenLeaderModal()} className="bg-[#0F5132] hover:bg-[#167046]">
                     <Plus className="w-4 h-4 mr-2" /> Tambah Pimpinan
                   </Button>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                    {[
-                      { name: 'KH. Anwar Iskandar', role: 'Ketua Umum', img: 'https://images.unsplash.com/photo-1566492031773-4f4e44671857?q=80&w=400&auto=format&fit=crop' },
-                      { name: 'Buya Amirsyah Tambunan', role: 'Sekretaris Umum', img: 'https://images.unsplash.com/photo-1544717305-2782549b5136?q=80&w=400&auto=format&fit=crop' },
-                      { name: 'KH. Marsudi Syuhud', role: 'Wakil Ketua Umum', img: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=400&auto=format&fit=crop' },
-                    ].map((person, idx) => (
+                    {leaders.map((person, idx) => (
                       <div key={idx} className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all group">
-                        <div className="h-48 w-full bg-slate-100 relative overflow-hidden">
-                          <img src={person.img} alt={person.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        <div className="h-48 w-full bg-slate-100 relative overflow-hidden flex items-center justify-center">
+                          {person.image_url ? (
+                            <img src={person.image_url} alt={person.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                          ) : (
+                            <UserCheck className="w-16 h-16 text-slate-300" />
+                          )}
                           <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button className="w-8 h-8 bg-white text-blue-600 rounded-full flex items-center justify-center shadow-lg hover:bg-blue-50 transition-colors">
+                            <button onClick={() => handleOpenLeaderModal(person)} className="w-8 h-8 bg-white text-blue-600 rounded-full flex items-center justify-center shadow-lg hover:bg-blue-50 transition-colors">
                               <Edit className="w-4 h-4" />
                             </button>
-                            <button className="w-8 h-8 bg-white text-red-600 rounded-full flex items-center justify-center shadow-lg hover:bg-red-50 transition-colors">
+                            <button onClick={() => handleDeleteLeader(person.id)} className="w-8 h-8 bg-white text-red-600 rounded-full flex items-center justify-center shadow-lg hover:bg-red-50 transition-colors">
                               <Trash2 className="w-4 h-4" />
                             </button>
                           </div>
                         </div>
                         <div className="p-5 text-center">
                           <h3 className="text-lg font-bold text-slate-800 leading-tight mb-1">{person.name}</h3>
-                          <span className="inline-block px-3 py-1 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-full">{person.role}</span>
+                          <span className="inline-block px-3 py-1 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-full">{person.position_id}</span>
                         </div>
                       </div>
                     ))}
                   </div>
-                </CardContent>
-              </Card>
-            </div>
-          )}
-
-          {/* TAB: Direktori Anggota */}
-          {activeTab === 'anggota' && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
-               <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
-                  <div>
-                    <CardTitle>Direktori Anggota MUI Kota</CardTitle>
-                    <CardDescription>Data seluruh anggota MUI di wilayah DKI Jakarta</CardDescription>
-                  </div>
-                  <Button className="bg-[#0F5132] hover:bg-[#167046]">
-                    <Plus className="w-4 h-4 mr-2" /> Tambah Anggota
-                  </Button>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex gap-4 mb-4">
-                    <Input placeholder="Cari nama anggota..." className="max-w-sm" />
-                    <select className="border rounded-md px-3 bg-white">
-                      <option>Semua Wilayah</option>
-                      <option>Jakarta Pusat</option>
-                      <option>Jakarta Selatan</option>
-                      <option>Jakarta Timur</option>
-                    </select>
-                  </div>
-                  <div className="border rounded-lg overflow-hidden">
-                    <table className="w-full text-sm text-left">
-                      <thead className="bg-slate-50 border-b">
-                        <tr>
-                          <th className="px-4 py-3">Nama</th>
-                          <th className="px-4 py-3">Wilayah</th>
-                          <th className="px-4 py-3">Status Verifikasi</th>
-                          <th className="px-4 py-3 text-right">Aksi</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y text-slate-500">
-                        <tr>
-                          <td colSpan={4} className="px-4 py-8 text-center">Belum ada data anggota.</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
+                  {leaders.length === 0 && (
+                     <div className="text-center py-8 text-slate-500">Belum ada data pimpinan.</div>
+                  )}
                 </CardContent>
               </Card>
             </div>
@@ -273,6 +296,56 @@ export default function ProfilManagementPage() {
 
         </div>
       </div>
+
+      {showLeaderModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="px-6 py-4 border-b">
+              <h2 className="text-xl font-bold text-slate-800">{editingLeaderId ? 'Edit Data Pimpinan' : 'Tambah Pimpinan'}</h2>
+            </div>
+            <form onSubmit={handleSaveLeader}>
+              <div className="p-6 space-y-4">
+                <div className="space-y-2">
+                  <Label>Nama Lengkap</Label>
+                  <Input 
+                    value={leaderForm.name} 
+                    onChange={e => setLeaderForm({...leaderForm, name: e.target.value})} 
+                    placeholder="Contoh: KH. Anwar Iskandar" 
+                    required 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Jabatan</Label>
+                  <Input 
+                    value={leaderForm.position_id} 
+                    onChange={e => setLeaderForm({...leaderForm, position_id: e.target.value})} 
+                    placeholder="Contoh: Ketua Umum" 
+                    required 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Foto Pimpinan (Opsional)</Label>
+                  <Input 
+                    type="file" 
+                    accept="image/*" 
+                    onChange={e => setLeaderFile(e.target.files ? e.target.files[0] : null)} 
+                  />
+                  {!leaderFile && leaderForm.image_url && (
+                    <p className="text-xs text-slate-500 mt-1">Foto saat ini terpasang.</p>
+                  )}
+                </div>
+              </div>
+              <div className="px-6 py-4 bg-slate-50 border-t flex justify-end gap-3">
+                <Button type="button" variant="outline" onClick={() => setShowLeaderModal(false)}>Batal</Button>
+                <Button type="submit" disabled={isSaving} className="bg-emerald-600 hover:bg-emerald-700">
+                  {isSaving ? 'Menyimpan...' : 'Simpan'}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
