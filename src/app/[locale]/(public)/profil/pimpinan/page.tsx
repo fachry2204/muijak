@@ -16,7 +16,7 @@ export default async function PimpinanPage() {
       <h2 className="text-3xl font-black text-slate-800 mb-2 border-b-2 border-emerald-600 pb-4 inline-block">Profil Pimpinan</h2>
       <p className="text-slate-500 mb-8 mt-2">Susunan Dewan Pimpinan Harian Majelis Ulama Indonesia Provinsi DKI Jakarta.</p>
       
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
         {leaders.length > 0 ? leaders.map((person) => (
           <div key={person.id} className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-shadow group flex flex-col">
             <div className="h-64 overflow-hidden relative bg-slate-100 flex items-center justify-center">
