@@ -138,7 +138,6 @@ export default function LoginPage() {
                   <Input 
                     id="email" 
                     type="email" 
-                    placeholder="admin@muijakarta.or.id" 
                     {...register('email')}
                     className="bg-slate-50 h-14 rounded-xl border-slate-200 focus:bg-white focus:ring-emerald-500 focus:border-emerald-500 transition-all px-4"
                   />
@@ -153,9 +152,8 @@ export default function LoginPage() {
                   <Input 
                     id="password" 
                     type="password" 
-                    placeholder="••••••••" 
                     {...register('password')}
-                    className="bg-slate-50 h-14 rounded-xl border-slate-200 focus:bg-white focus:ring-emerald-500 focus:border-emerald-500 transition-all px-4 tracking-widest"
+                    className="bg-slate-50 h-14 rounded-xl border-slate-200 focus:bg-white focus:ring-emerald-500 focus:border-emerald-500 transition-all px-4"
                   />
                   {errors.password && <span className="text-xs text-red-500 font-medium">{errors.password.message}</span>}
                 </div>

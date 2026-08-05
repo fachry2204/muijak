@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface FooterMapProps {
+  address?: string;
   lat?: number;
   lng?: number;
   zoom?: number;
@@ -10,37 +11,69 @@ interface FooterMapProps {
 }
 
 export default function FooterMap({ 
-  lat = -6.1252, 
-  lng = 106.8738, 
+  address,
+  lat, 
+  lng, 
   zoom = 15,
   label = "MUI DKI Jakarta"
 }: FooterMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
+  const [coords, setCoords] = useState<{ lat: number; lng: number }>({
+    lat: lat || -6.1252,
+    lng: lng || 106.8738,
+  });
+
+  // Geocode address when address or lat/lng prop changes
+  useEffect(() => {
+    let cancelled = false;
+
+    if (lat !== undefined && lng !== undefined && !isNaN(lat) && !isNaN(lng)) {
+      setCoords({ lat, lng });
+      return;
+    }
+
+    if (address && address.trim().length > 3) {
+      const timer = setTimeout(() => {
+        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`)
+          .then((res) => res.json())
+          .then((data) => {
+            if (!cancelled && data && data.length > 0) {
+              const newLat = parseFloat(data[0].lat);
+              const newLng = parseFloat(data[0].lon);
+              if (!isNaN(newLat) && !isNaN(newLng)) {
+                setCoords({ lat: newLat, lng: newLng });
+              }
+            }
+          })
+          .catch((err) => console.error("Geocoding failed:", err));
+      }, 500);
+
+      return () => {
+        cancelled = true;
+        clearTimeout(timer);
+      };
+    }
+  }, [address, lat, lng]);
 
   useEffect(() => {
     if (!mapRef.current) return;
 
-    // Flag untuk membatalkan async import jika cleanup sudah berjalan lebih dulu
     let cancelled = false;
 
-    // Cleanup instance lama jika ada (dari re-render sebelumnya)
     if (mapInstanceRef.current) {
       mapInstanceRef.current.remove();
       mapInstanceRef.current = null;
     }
 
-    // Reset internal Leaflet flag pada container
     const container = mapRef.current as any;
     if (container._leaflet_id) {
       container._leaflet_id = null;
     }
 
     import('leaflet').then((L) => {
-      // Jika cleanup sudah berjalan (React Strict Mode / unmount), batalkan
       if (cancelled || !mapRef.current) return;
 
-      // Fix default icon paths untuk Next.js
       delete (L.Icon.Default.prototype as any)._getIconUrl;
       L.Icon.Default.mergeOptions({
         iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
@@ -49,7 +82,7 @@ export default function FooterMap({
       });
 
       const map = L.map(mapRef.current, {
-        center: [lat, lng],
+        center: [coords.lat, coords.lng],
         zoom,
         zoomControl: true,
         scrollWheelZoom: false,
@@ -59,12 +92,10 @@ export default function FooterMap({
 
       mapInstanceRef.current = map;
 
-      // CartoDB Voyager — tampilan bersih mirip Google Maps
       L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
         maxZoom: 19,
       }).addTo(map);
 
-      // Custom pin hijau sesuai tema MUI
       const customIcon = L.divIcon({
         className: '',
         html: `
@@ -81,16 +112,15 @@ export default function FooterMap({
         popupAnchor: [0, -46],
       });
 
-      // Marker dengan popup info
-      const marker = L.marker([lat, lng], { icon: customIcon }).addTo(map);
+      const marker = L.marker([coords.lat, coords.lng], { icon: customIcon }).addTo(map);
       marker.bindPopup(`
         <div style="font-family:Arial,sans-serif;min-width:160px;padding:4px 0;">
           <div style="font-weight:bold;color:#0A6B41;font-size:13px;margin-bottom:4px;">${label}</div>
           <div style="font-size:11px;color:#555;line-height:1.5;">
-            Jakarta Islamic Center<br/>Koja, Jakarta Utara 14260
+            ${address || 'Lokasi MUI'}
           </div>
           <a 
-            href="https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}#map=${zoom}/${lat}/${lng}"
+            href="https://www.openstreetmap.org/?mlat=${coords.lat}&mlon=${coords.lng}#map=${zoom}/${coords.lat}/${coords.lng}"
             target="_blank"
             rel="noopener noreferrer"
             style="display:inline-block;margin-top:8px;font-size:11px;color:#0A6B41;font-weight:bold;"
@@ -100,18 +130,16 @@ export default function FooterMap({
     });
 
     return () => {
-      // Set flag sehingga async import yang pending tidak akan melanjutkan init
       cancelled = true;
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
       }
     };
-  }, [lat, lng, zoom, label]);
+  }, [coords, zoom, label, address]);
 
   return (
     <>
-      {/* Leaflet CSS */}
       <link
         rel="stylesheet"
         href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"

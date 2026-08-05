@@ -4,14 +4,15 @@ import { RowDataPacket } from 'mysql2';
 
 import { getSession } from '@/lib/auth';
 
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> | { id: string } }) {
   try {
     const session = await getSession();
     if (!session || session.role !== 'ADMIN') {
       return NextResponse.json({ success: false, error: 'Unauthorized. Only ADMIN can delete.' }, { status: 403 });
     }
 
-    const id = params.id;
+    const resolvedParams = await params;
+    const id = resolvedParams.id;
     
     // Check if user exists and is not the last admin
     const [user] = await pool.query<RowDataPacket[]>('SELECT role FROM users WHERE id = ?', [id]);
@@ -34,14 +35,15 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
   }
 }
 
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
+export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> | { id: string } }) {
   try {
     const session = await getSession();
     if (!session || session.role !== 'ADMIN') {
       return NextResponse.json({ success: false, error: 'Unauthorized. Only ADMIN can perform this action.' }, { status: 403 });
     }
 
-    const id = params.id;
+    const resolvedParams = await params;
+    const id = resolvedParams.id;
     const body = await request.json();
     
     // For simplicity, we just handle toggling status or updating role/name here

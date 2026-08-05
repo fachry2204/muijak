@@ -32,7 +32,7 @@ export function Footer() {
           {/* Brand Info */}
           <div>
             <div className="mb-6">
-              <img src={settings.website_logo || "/gambar/logoweb.png"} alt="MUI Logo" className="h-16 w-auto" />
+              <img src={settings.footer_logo || settings.website_logo || "/gambar/logoweb.png"} alt="MUI Logo" className="h-16 w-auto" />
             </div>
             <p className="text-sm leading-relaxed mb-6">
               Wadah musyawarah para ulama, zuama, dan cendekiawan muslim di Provinsi DKI Jakarta untuk mengayomi umat dan mengembangkan kehidupan yang Islami.
@@ -97,8 +97,9 @@ export function Footer() {
             </h3>
             <div className="w-full h-44 rounded-lg overflow-hidden border border-slate-700">
               <FooterMap
-                lat={-6.1252}
-                lng={106.8738}
+                address={settings.address}
+                lat={settings.map_lat ? parseFloat(settings.map_lat) : undefined}
+                lng={settings.map_lng ? parseFloat(settings.map_lng) : undefined}
                 zoom={15}
                 label="MUI DKI Jakarta"
               />

@@ -12,9 +12,16 @@ export function Navbar({ locale, dynamicMenus = [], session = null }: { locale: 
   const [currentDate, setCurrentDate] = useState('');
   const [jadwalSholat, setJadwalSholat] = useState<any>(null);
   const [activeSholat, setActiveSholat] = useState<string>('');
+  const [settings, setSettings] = useState<Record<string, string>>({});
   const pathname = usePathname();
 
   useEffect(() => {
+    axios.get('/api/settings')
+      .then(res => {
+        if (res.data.success) setSettings(res.data.data);
+      })
+      .catch(err => console.error("Error fetching settings:", err));
+
     const date = new Date();
     const options: Intl.DateTimeFormatOptions = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
     setCurrentDate(date.toLocaleDateString('id-ID', options));
@@ -136,7 +143,7 @@ export function Navbar({ locale, dynamicMenus = [], session = null }: { locale: 
         
         {/* Logo */}
         <Link href="/" className="flex items-center gap-3 relative z-10 mr-12">
-          <img src="/gambar/logoweb.png" alt="MUI Logo" className="h-16 w-auto" />
+          <img src={settings.header_logo || settings.website_logo || "/gambar/logoweb.png"} alt="MUI Logo" className="h-16 w-auto" />
         </Link>
 
         {/* Desktop Nav */}
