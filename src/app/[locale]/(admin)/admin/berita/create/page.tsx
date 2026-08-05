@@ -33,7 +33,8 @@ export default function CreateBeritaPage() {
       meta_desc: '',
       meta_keywords: '',
       youtube_url: '',
-      image_main: null
+      image_main: null,
+      published_at: new Date().toISOString().split('T')[0] // default today
     }
   });
 
@@ -120,6 +121,9 @@ export default function CreateBeritaPage() {
       formData.append('content_id', data.content_id);
       formData.append('slug', data.slug);
       formData.append('status', submitType);
+      if (data.published_at) formData.append('published_at', data.published_at);
+      if (data.meta_title) formData.append('meta_title', data.meta_title);
+      if (data.meta_desc) formData.append('meta_desc', data.meta_desc);
 
       if (data.image_main && data.image_main[0]) {
         formData.append('image_main', data.image_main[0]);
@@ -141,9 +145,10 @@ export default function CreateBeritaPage() {
         }
         router.push('/admin/berita');
       }
-    } catch (error) {
-      console.error('Failed to create news');
-      alert('Gagal membuat berita');
+    } catch (error: any) {
+      console.error('Failed to create news:', error);
+      const msg = error?.response?.data?.error || error?.message || 'Gagal membuat berita';
+      alert(`Gagal membuat berita: ${msg}`);
     } finally {
       setLoading(false);
     }
@@ -166,6 +171,19 @@ export default function CreateBeritaPage() {
               <div className="space-y-2">
                 <Label htmlFor="title_id">Judul Berita</Label>
                 <Input id="title_id" {...register('title_id', { required: true })} placeholder="Masukkan judul berita" className="text-lg font-semibold" />
+                {errors.title_id && <span className="text-red-500 text-xs">Judul berita wajib diisi</span>}
+              </div>
+
+              {/* Tanggal Publish */}
+              <div className="space-y-2">
+                <Label htmlFor="published_at">Tanggal Publish Berita</Label>
+                <Input 
+                  id="published_at" 
+                  type="date" 
+                  {...register('published_at')} 
+                  className="bg-white w-full max-w-xs"
+                />
+                <p className="text-xs text-slate-500">Tanggal ditayangkan. Default: hari ini. Bisa diubah untuk berita terdahulu.</p>
               </div>
 
               <div className="space-y-2 relative z-50">

@@ -26,7 +26,12 @@ export async function POST(request: Request) {
     const slug = formData.get('slug') as string;
     const category_id = formData.get('category_id') as string;
     const status = (formData.get('status') as string) || 'DRAFT';
-    let content_id = formData.get('content_id') as string;
+    let content_id = (formData.get('content_id') as string) || '';
+    const published_at_raw = formData.get('published_at') as string | null;
+    // If status is PUBLISHED, use provided date or now; if DRAFT, leave null
+    const published_at = status === 'PUBLISHED'
+      ? (published_at_raw ? new Date(published_at_raw) : new Date())
+      : (published_at_raw ? new Date(published_at_raw) : null);
     
     const imageMain = formData.get('image_main') as File | null;
     const galleryFiles = formData.getAll('gallery') as File[];
@@ -99,8 +104,8 @@ export async function POST(request: Request) {
     }
     
     await pool.query(
-      'INSERT INTO news (id, title_id, slug, content_id, category_id, image_url, status) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [newsId, title_id, slug, content_id, category_id, imageUrl, status]
+      'INSERT INTO news (id, title_id, slug, content_id, category_id, image_url, status, published_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      [newsId, title_id, slug, content_id, category_id, imageUrl, status, published_at]
     );
     
     await pool.query(`
@@ -117,8 +122,8 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({ success: true, id: newsId });
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json({ success: false, error: 'Failed to create' }, { status: 500 });
+  } catch (error: any) {
+    console.error('News create error:', error);
+    return NextResponse.json({ success: false, error: error?.message || 'Failed to create news' }, { status: 500 });
   }
 }

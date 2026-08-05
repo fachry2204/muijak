@@ -32,7 +32,11 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     const slug = formData.get('slug') as string;
     const category_id = formData.get('category_id') as string;
     const status = (formData.get('status') as string) || 'DRAFT';
-    let content_id = formData.get('content_id') as string;
+    let content_id = (formData.get('content_id') as string) || '';
+    const published_at_raw = formData.get('published_at') as string | null;
+    const published_at = status === 'PUBLISHED'
+      ? (published_at_raw ? new Date(published_at_raw) : new Date())
+      : (published_at_raw ? new Date(published_at_raw) : null);
     
     const imageMain = formData.get('image_main') as File | null;
     const galleryFiles = formData.getAll('gallery') as File[];
@@ -57,7 +61,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     if (!fs.existsSync(galleryDir)) fs.mkdirSync(galleryDir, { recursive: true });
 
     let imageUpdateQuery = '';
-    let queryParams: any[] = [title_id, slug, category_id, status];
+    let queryParams: any[] = [title_id, slug, category_id, status, published_at];
     
     if (imageMain && imageMain.size > 0) {
       const ext = path.extname(imageMain.name) || '.jpg';
@@ -92,7 +96,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     queryParams.push(id);
     
     await pool.query(
-      `UPDATE news SET title_id = ?, slug = ?, category_id = ?, status = ?${imageUpdateQuery}, content_id = ? WHERE id = ?`,
+      `UPDATE news SET title_id = ?, slug = ?, category_id = ?, status = ?, published_at = ?${imageUpdateQuery}, content_id = ? WHERE id = ?`,
       queryParams
     );
     
@@ -121,9 +125,9 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     }
 
     return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json({ success: false, error: 'Failed to update' }, { status: 500 });
+  } catch (error: any) {
+    console.error('News update error:', error);
+    return NextResponse.json({ success: false, error: error?.message || 'Failed to update news' }, { status: 500 });
   }
 }
 

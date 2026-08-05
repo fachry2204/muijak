@@ -41,7 +41,8 @@ export default function EditBeritaPage({ params }: { params: Promise<{ id: strin
       meta_keywords: '',
       youtube_url: '',
       image_main: null,
-      status: 'PUBLISHED'
+      status: 'PUBLISHED',
+      published_at: new Date().toISOString().split('T')[0]
     }
   });
 
@@ -114,6 +115,12 @@ export default function EditBeritaPage({ params }: { params: Promise<{ id: strin
           setValue('slug', news.slug);
           setValue('status', news.status);
           setValue('youtube_url', news.youtube_url || '');
+          // Set published_at from DB (format YYYY-MM-DD for date input)
+          if (news.published_at) {
+            setValue('published_at', new Date(news.published_at).toISOString().split('T')[0]);
+          } else if (news.created_at) {
+            setValue('published_at', new Date(news.created_at).toISOString().split('T')[0]);
+          }
           setSubmitType(news.status);
           if (news.image_url) {
             setMainImagePreview(news.image_url);
@@ -138,6 +145,8 @@ export default function EditBeritaPage({ params }: { params: Promise<{ id: strin
       formData.append('content_id', data.content_id);
       formData.append('slug', data.slug);
       formData.append('status', submitType);
+      if (data.published_at) formData.append('published_at', data.published_at);
+      if (data.meta_title) formData.append('meta_title', data.meta_title);
       
       if (data.image_main && data.image_main[0] && typeof data.image_main[0] !== 'string') {
         formData.append('image_main', data.image_main[0]);
@@ -159,9 +168,10 @@ export default function EditBeritaPage({ params }: { params: Promise<{ id: strin
         }
         router.push('/admin/berita');
       }
-    } catch (error) {
-      console.error('Failed to update news');
-      alert('Gagal mengupdate berita');
+    } catch (error: any) {
+      console.error('Failed to update news:', error);
+      const msg = error?.response?.data?.error || error?.message || 'Gagal mengupdate berita';
+      alert(`Gagal mengupdate berita: ${msg}`);
     } finally {
       setLoading(false);
     }
@@ -192,6 +202,19 @@ export default function EditBeritaPage({ params }: { params: Promise<{ id: strin
               <div className="space-y-2">
                 <Label htmlFor="title_id">Judul Berita</Label>
                 <Input id="title_id" {...register('title_id', { required: true })} placeholder="Masukkan judul berita" className="text-lg font-semibold" />
+                {errors.title_id && <span className="text-red-500 text-xs">Judul berita wajib diisi</span>}
+              </div>
+
+              {/* Tanggal Publish */}
+              <div className="space-y-2">
+                <Label htmlFor="published_at">Tanggal Publish Berita</Label>
+                <Input 
+                  id="published_at" 
+                  type="date" 
+                  {...register('published_at')} 
+                  className="bg-white w-full max-w-xs"
+                />
+                <p className="text-xs text-slate-500">Tanggal berita ditayangkan. Bisa diubah sesuai kebutuhan.</p>
               </div>
 
               <div className="space-y-2 relative z-50">
