@@ -51,8 +51,38 @@ function LocationMarker({ position, onChange }: { position: L.LatLngExpression, 
 function MapUpdater({ center }: { center: [number, number] }) {
   const map = useMap();
   useEffect(() => {
-    map.flyTo(center, 16);
+    map.setView(center, 16, {animate: false});
+    map.invalidateSize({pan: false});
   }, [center, map]);
+  return null;
+}
+
+// Pastikan tile memenuhi kontainer setelah modal, sidebar, atau form berubah ukuran.
+function MapResizeHandler() {
+  const map = useMap();
+
+  useEffect(() => {
+    const container = map.getContainer();
+    const refresh = () => map.invalidateSize({pan: false});
+    const timers = [
+      window.setTimeout(refresh, 0),
+      window.setTimeout(refresh, 150),
+      window.setTimeout(refresh, 500),
+    ];
+    const observer = typeof ResizeObserver !== 'undefined'
+      ? new ResizeObserver(refresh)
+      : null;
+
+    observer?.observe(container);
+    window.addEventListener('resize', refresh);
+
+    return () => {
+      observer?.disconnect();
+      timers.forEach((timer) => window.clearTimeout(timer));
+      window.removeEventListener('resize', refresh);
+    };
+  }, [map]);
+
   return null;
 }
 
@@ -90,7 +120,7 @@ export default function MapPicker({ lat, lng, address, onChange }: MapPickerProp
   }, [address]); // onChange is intentionally excluded to prevent loop
 
   return (
-    <div className="w-full relative h-[300px] border border-slate-300 rounded-lg overflow-hidden mt-4 z-0">
+    <div className="relative z-0 mt-4 h-[360px] min-h-[300px] w-full overflow-hidden rounded-lg border border-slate-300 bg-slate-100">
       {searching && (
         <div className="absolute top-2 left-1/2 -translate-x-1/2 z-[1000] bg-white/90 px-4 py-1.5 rounded-full shadow-md text-sm font-bold text-emerald-700">
           Mencari lokasi otomatis...
@@ -100,12 +130,15 @@ export default function MapPicker({ lat, lng, address, onChange }: MapPickerProp
         center={[lat, lng]} 
         zoom={13} 
         scrollWheelZoom={true} 
+        className="h-full w-full"
         style={{ height: '100%', width: '100%' }}
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          maxZoom={19}
         />
+        <MapResizeHandler />
         <MapUpdater center={[lat, lng]} />
         <LocationMarker position={[lat, lng]} onChange={onChange} />
       </MapContainer>

@@ -153,3 +153,15 @@
 body {
   top: 0 !important;
 }
+
+/* Prevent global image rules from stretching OpenStreetMap tiles. */
+.leaflet-container {
+  width: 100% !important;
+  height: 100% !important;
+  background: #e5e7eb;
+}
+
+.leaflet-container .leaflet-tile {
+  max-width: none !important;
+  max-height: none !important;
+}
