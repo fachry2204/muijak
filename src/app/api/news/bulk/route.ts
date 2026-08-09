@@ -1,8 +1,14 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
+import { getSession } from '@/lib/auth';
 
 export async function POST(request: Request) {
   try {
+    const session = await getSession();
+    if (!session || session.role !== 'ADMIN') {
+      return NextResponse.json({ success: false, error: 'Unauthorized. Only ADMIN can perform this action.' }, { status: 403 });
+    }
+
     const { action, ids, category_id } = await request.json();
 
     if (!ids || ids.length === 0) {
@@ -17,11 +23,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: true, message: 'Permanently deleted successfully' });
     } 
     else if (action === 'trash') {
-      await pool.query(`UPDATE news SET status = 'TRASHED' WHERE id IN (${placeholders})`, ids);
+      await pool.query(`UPDATE news SET status = 'TRASHED', deleted_at = NOW() WHERE id IN (${placeholders})`, ids);
       return NextResponse.json({ success: true, message: 'Moved to trash successfully' });
     }
     else if (action === 'restore') {
-      await pool.query(`UPDATE news SET status = 'DRAFT' WHERE id IN (${placeholders})`, ids);
+      await pool.query(`UPDATE news SET status = 'DRAFT', deleted_at = NULL WHERE id IN (${placeholders})`, ids);
       return NextResponse.json({ success: true, message: 'Restored successfully' });
     }
     else if (action === 'move_category') {

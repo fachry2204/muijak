@@ -148,7 +148,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
       await pool.query('DELETE FROM news WHERE id = ?', [id]);
       return NextResponse.json({ success: true, message: 'Permanently deleted' });
     } else {
-      await pool.query('UPDATE news SET status = "TRASHED" WHERE id = ?', [id]);
+      await pool.query('UPDATE news SET status = "TRASHED", deleted_at = NOW() WHERE id = ?', [id]);
       return NextResponse.json({ success: true, message: 'Moved to trash' });
     }
   } catch (error) {

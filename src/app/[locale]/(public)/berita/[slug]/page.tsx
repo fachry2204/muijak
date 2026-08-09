@@ -16,8 +16,9 @@ export default function ReadNewsPage() {
       .then(res => res.json())
       .then(data => {
         if (data.success && data.data) {
-          setAllNews(data.data.filter((n: any) => n.status !== 'DRAFT'));
-          const found = data.data.find((n: any) => n.slug === slug);
+          const publishedNews = data.data.filter((n: any) => n.status === 'PUBLISHED');
+          setAllNews(publishedNews);
+          const found = publishedNews.find((n: any) => n.slug === slug);
           if (found) {
             // Increment view locally and remotely
             found.views = (found.views || 0) + 1;

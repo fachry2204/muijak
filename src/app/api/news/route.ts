@@ -5,12 +5,20 @@ import { validateUploadedFile } from '@/lib/fileUpload';
 
 export async function GET() {
   try {
+    // Bersihkan berita yang sudah berada di tong sampah selama 30 hari.
+    await pool.query(`
+      DELETE FROM news
+      WHERE status = 'TRASHED'
+        AND deleted_at IS NOT NULL
+        AND deleted_at <= DATE_SUB(NOW(), INTERVAL 30 DAY)
+    `);
+
     const [rows] = await pool.query<RowDataPacket[]>(`
       SELECT n.*, c.name_id as category_name, u.name as author_name 
       FROM news n 
       LEFT JOIN categories c ON n.category_id = c.id 
       LEFT JOIN users u ON n.author_id = u.id 
-      ORDER BY n.created_at DESC
+      ORDER BY COALESCE(n.deleted_at, n.created_at) DESC
     `);
     return NextResponse.json({ success: true, data: rows });
   } catch (error) {

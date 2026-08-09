@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Link } from '@/i18n/routing';
-import { PlusCircle, Edit, Trash2, Eye } from 'lucide-react';
+import { PlusCircle, Edit, Trash2, Eye, RotateCcw } from 'lucide-react';
 
 export default function BeritaAdminPage() {
   const [news, setNews] = useState<any[]>([]);
@@ -65,6 +65,22 @@ export default function BeritaAdminPage() {
         alert('Gagal memproses berita');
       }
     }
+  };
+
+  const handleRestore = async (id: string) => {
+    try {
+      await axios.post('/api/news/bulk', { action: 'restore', ids: [id] });
+      fetchNews();
+      setSelectedNews(prev => prev.filter(i => i !== id));
+    } catch (error) {
+      alert('Gagal memulihkan berita');
+    }
+  };
+
+  const getDaysUntilPermanentDeletion = (deletedAt: string | null) => {
+    if (!deletedAt) return 30;
+    const expiresAt = new Date(deletedAt).getTime() + (30 * 24 * 60 * 60 * 1000);
+    return Math.max(0, Math.ceil((expiresAt - Date.now()) / (24 * 60 * 60 * 1000)));
   };
 
   const handleBulkAction = async () => {
@@ -208,6 +224,11 @@ export default function BeritaAdminPage() {
           </div>
         </CardHeader>
         <CardContent className="pt-4">
+          {activeTab === 'TRASHED' && (
+            <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              Berita di tab ini tidak tampil di halaman publik dan akan dihapus permanen secara otomatis setelah 30 hari. Anda masih dapat memulihkannya sebelum batas waktu tersebut.
+            </div>
+          )}
           {loading ? (
             <p>Loading data...</p>
           ) : (
@@ -227,14 +248,14 @@ export default function BeritaAdminPage() {
                   <TableHead className="font-bold text-slate-900">Penulis</TableHead>
                   <TableHead className="font-bold text-slate-900">Status</TableHead>
                   <TableHead className="font-bold text-slate-900">Tanggal Terbit</TableHead>
-                  <TableHead className="font-bold text-slate-900">Tanggal Upload</TableHead>
+                  <TableHead className="font-bold text-slate-900">{activeTab === 'TRASHED' ? 'Masa Penyimpanan' : 'Tanggal Upload'}</TableHead>
                   <TableHead className="text-right font-bold text-slate-900">Aksi</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {news.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center text-slate-500 py-8">Belum ada berita.</TableCell>
+                    <TableCell colSpan={8} className="text-center text-slate-500 py-8">Belum ada berita.</TableCell>
                   </TableRow>
                 ) : (
                   news.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((item) => (
@@ -258,14 +279,29 @@ export default function BeritaAdminPage() {
                         </span>
                       </TableCell>
                       <TableCell>{item.published_at ? new Date(item.published_at).toLocaleDateString('id-ID') : (item.status === 'PUBLISHED' ? new Date(item.created_at).toLocaleDateString('id-ID') : '-')}</TableCell>
-                      <TableCell>{item.created_at ? new Date(item.created_at).toLocaleDateString('id-ID') : '-'}</TableCell>
+                      <TableCell>
+                        {activeTab === 'TRASHED' ? (
+                          <div className="text-xs">
+                            <div>{item.deleted_at ? `Dihapus ${new Date(item.deleted_at).toLocaleDateString('id-ID')}` : 'Baru dihapus'}</div>
+                            <div className="font-semibold text-red-600">{getDaysUntilPermanentDeletion(item.deleted_at)} hari tersisa</div>
+                          </div>
+                        ) : (item.created_at ? new Date(item.created_at).toLocaleDateString('id-ID') : '-')}
+                      </TableCell>
                       <TableCell className="text-right space-x-2">
-                        <a href={`/berita/${item.slug}`} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center rounded-lg border border-emerald-200 bg-white hover:bg-emerald-50 text-emerald-600 h-8 w-8 transition-colors">
-                          <Eye className="h-4 w-4" />
-                        </a>
-                        <Link href={`/admin/berita/edit/${item.id}`} className="inline-flex items-center justify-center rounded-lg border border-blue-200 bg-white hover:bg-blue-50 text-blue-600 h-8 w-8 transition-colors">
-                          <Edit className="h-4 w-4" />
-                        </Link>
+                        {activeTab === 'TRASHED' ? (
+                          <Button onClick={() => handleRestore(item.id)} variant="outline" size="icon" title="Pulihkan berita" className="h-8 w-8 text-emerald-600 border-emerald-200 hover:bg-emerald-50">
+                            <RotateCcw className="h-4 w-4" />
+                          </Button>
+                        ) : (
+                          <>
+                            <a href={`/berita/${item.slug}`} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center rounded-lg border border-emerald-200 bg-white hover:bg-emerald-50 text-emerald-600 h-8 w-8 transition-colors">
+                              <Eye className="h-4 w-4" />
+                            </a>
+                            <Link href={`/admin/berita/edit/${item.id}`} className="inline-flex items-center justify-center rounded-lg border border-blue-200 bg-white hover:bg-blue-50 text-blue-600 h-8 w-8 transition-colors">
+                              <Edit className="h-4 w-4" />
+                            </Link>
+                          </>
+                        )}
                         <Button onClick={() => handleDelete(item.id)} variant="outline" size="icon" className="h-8 w-8 text-red-600 border-red-200 hover:bg-red-50">
                           <Trash2 className="h-4 w-4" />
                         </Button>
