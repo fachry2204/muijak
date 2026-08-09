@@ -40,6 +40,9 @@ export async function POST(request: Request) {
     const slug = formData.get('slug') as string;
     const category_id = formData.get('category_id') as string;
     const status = (formData.get('status') as string) || 'DRAFT';
+    const meta_title = (formData.get('meta_title') as string) || title_id;
+    const meta_desc = (formData.get('meta_desc') as string) || '';
+    const meta_keywords = (formData.get('meta_keywords') as string) || '';
     let content_id = (formData.get('content_id') as string) || '';
     const published_at_raw = formData.get('published_at') as string | null;
     // If status is PUBLISHED, use provided date or now; if DRAFT, leave null
@@ -118,8 +121,8 @@ export async function POST(request: Request) {
     }
     
     await pool.query(
-      'INSERT INTO news (id, title_id, slug, content_id, category_id, image_url, status, published_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-      [newsId, title_id, slug, content_id, category_id, imageUrl, status, published_at]
+      'INSERT INTO news (id, title_id, slug, content_id, category_id, image_url, status, published_at, meta_title, meta_desc, meta_keywords) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [newsId, title_id, slug, content_id, category_id, imageUrl, status, published_at, meta_title, meta_desc, meta_keywords]
     );
     
     await pool.query(`

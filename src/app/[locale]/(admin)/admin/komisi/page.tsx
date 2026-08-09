@@ -198,8 +198,8 @@ export default function KomisiManagementPage() {
       try {
         await axios.delete(`/api/komisi/${id}`);
         fetchKomisi();
-      } catch (error) {
-        alert('Gagal menghapus komisi');
+      } catch (error: any) {
+        alert(error.response?.data?.error || 'Gagal menghapus komisi');
       }
     }
   };
@@ -411,7 +411,7 @@ export default function KomisiManagementPage() {
                           <Label className="text-sm font-bold text-slate-700">Nama Komisi / Divisi</Label>
                           <Input className="mt-1" placeholder="Contoh: Komisi Fatwa, Divisi Humas..." value={sub.name} onChange={e => updateSubKomisiName(sIdx, e.target.value)} />
                         </div>
-                        <Button type="button" variant="destructive" size="icon" onClick={() => handleRemoveSubKomisi(sIdx)} className="h-10 w-10 mt-6" disabled={subKomisi.length === 1}>
+                        <Button type="button" variant="destructive" size="icon" onClick={() => handleRemoveSubKomisi(sIdx)} className="h-10 w-10 mt-6" title="Hapus komisi/divisi">
                           <Trash2 className="w-4 h-4" />
                         </Button>
                       </div>
@@ -439,7 +439,7 @@ export default function KomisiManagementPage() {
                                 <Label className="text-[11px] text-slate-500">No HP</Label>
                                 <Input className="h-8 text-sm" placeholder="No HP..." value={member.no_hp} onChange={e => updateSubKomisiMember(sIdx, mIdx, 'no_hp', e.target.value)} />
                               </div>
-                              <Button type="button" variant="destructive" size="icon" className="h-8 w-8 shrink-0" onClick={() => handleRemoveSubKomisiMember(sIdx, mIdx)} disabled={sub.members.length === 1}>
+                              <Button type="button" variant="destructive" size="icon" className="h-8 w-8 shrink-0" onClick={() => handleRemoveSubKomisiMember(sIdx, mIdx)} title="Hapus anggota">
                                 <Trash2 className="w-3 h-3" />
                               </Button>
                             </div>

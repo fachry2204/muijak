@@ -10,6 +10,7 @@ export default function ReadNewsPage() {
   const slug = params?.slug as string;
   const [article, setArticle] = useState<any>(null);
   const [allNews, setAllNews] = useState<any[]>([]);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     fetch('/api/news')
@@ -30,6 +31,48 @@ export default function ReadNewsPage() {
       })
       .catch(err => console.error(err));
   }, [slug]);
+
+  const getShareData = () => {
+    const url = window.location.href;
+    const description = (article.content_id || '')
+      .replace(/<[^>]*>/g, ' ')
+      .replace(/&nbsp;/gi, ' ')
+      .replace(/&amp;/gi, '&')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, 240);
+    const copyright = '© Copyright MUI Jakarta — Dibagikan melalui www.muijakarta.or.id';
+    const text = `${url}\n\n${description}${description ? '…' : ''}\n\n${copyright}`;
+
+    return {url, description, copyright, text};
+  };
+
+  const openShareWindow = (url: string) => {
+    window.open(url, '_blank', 'noopener,noreferrer,width=720,height=600');
+  };
+
+  const shareToFacebook = () => {
+    const {url} = getShareData();
+    openShareWindow(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`);
+  };
+
+  const shareToTwitter = () => {
+    const {url, description, copyright} = getShareData();
+    const text = `${article.title_id}\n\n${description}\n\n${copyright}`;
+    openShareWindow(`https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`);
+  };
+
+  const shareToWhatsApp = () => {
+    const {text} = getShareData();
+    openShareWindow(`https://wa.me/?text=${encodeURIComponent(text)}`);
+  };
+
+  const copyShareText = async () => {
+    const {text} = getShareData();
+    await navigator.clipboard.writeText(text);
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 2000);
+  };
 
   if (!article) return <div className="min-h-screen flex items-center justify-center">Memuat...</div>;
 
@@ -88,18 +131,19 @@ export default function ReadNewsPage() {
           {/* Share Buttons */}
           <div className="flex items-center gap-4 mb-8">
             <span className="text-sm font-bold text-slate-700">Bagikan:</span>
-            <button className="w-9 h-9 rounded-full bg-[#1877F2] text-white flex items-center justify-center hover:-translate-y-1 transition-transform shadow">
+            <button onClick={shareToFacebook} title="Bagikan ke Facebook" aria-label="Bagikan ke Facebook" className="w-9 h-9 rounded-full bg-[#1877F2] text-white flex items-center justify-center hover:-translate-y-1 transition-transform shadow">
               <Share2 className="w-4 h-4" />
             </button>
-            <button className="w-9 h-9 rounded-full bg-[#1DA1F2] text-white flex items-center justify-center hover:-translate-y-1 transition-transform shadow">
+            <button onClick={shareToTwitter} title="Bagikan ke X/Twitter" aria-label="Bagikan ke X/Twitter" className="w-9 h-9 rounded-full bg-[#1DA1F2] text-white flex items-center justify-center hover:-translate-y-1 transition-transform shadow">
               <Globe className="w-4 h-4" />
             </button>
-            <button className="w-9 h-9 rounded-full bg-[#25D366] text-white flex items-center justify-center hover:-translate-y-1 transition-transform shadow">
+            <button onClick={shareToWhatsApp} title="Bagikan ke WhatsApp" aria-label="Bagikan ke WhatsApp" className="w-9 h-9 rounded-full bg-[#25D366] text-white flex items-center justify-center hover:-translate-y-1 transition-transform shadow">
               <MessageCircle className="w-4 h-4" />
             </button>
-            <button className="w-9 h-9 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center hover:-translate-y-1 transition-transform shadow">
+            <button onClick={copyShareText} title="Salin tautan dan deskripsi" aria-label="Salin tautan dan deskripsi" className="w-9 h-9 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center hover:-translate-y-1 transition-transform shadow">
               <LinkIcon className="w-4 h-4" />
             </button>
+            {copied && <span className="text-xs font-medium text-emerald-600">Tautan dan deskripsi disalin</span>}
           </div>
 
           {/* Rich Text Content */}

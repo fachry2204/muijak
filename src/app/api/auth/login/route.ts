@@ -12,13 +12,16 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Email and password are required' }, { status: 400 });
     }
 
-    const [rows] = await pool.query<RowDataPacket[]>('SELECT id, name, email, password, role FROM users WHERE email = ?', [email]);
+    const [rows] = await pool.query<RowDataPacket[]>('SELECT id, name, email, password, role, status FROM users WHERE email = ?', [email]);
     
     if (rows.length === 0) {
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
 
     const user = rows[0];
+    if (user.status !== 'APPROVED') {
+      return NextResponse.json({ error: 'Akun belum aktif atau telah dinonaktifkan' }, { status: 403 });
+    }
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {

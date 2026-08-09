@@ -3,16 +3,17 @@ import pool from '@/lib/db';
 import { RowDataPacket } from 'mysql2';
 import { getSession } from '@/lib/auth';
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const [komisiRows] = await pool.query<RowDataPacket[]>('SELECT * FROM komisi WHERE id = ?', [params.id]);
+    const { id } = await params;
+    const [komisiRows] = await pool.query<RowDataPacket[]>('SELECT * FROM komisi WHERE id = ?', [id]);
     if (komisiRows.length === 0) {
       return NextResponse.json({ success: false, error: 'Not found' }, { status: 404 });
     }
     
     const komisi = komisiRows[0];
     
-    const [anggotaRows] = await pool.query<RowDataPacket[]>('SELECT * FROM komisi_anggota WHERE komisi_id = ?', [params.id]);
+    const [anggotaRows] = await pool.query<RowDataPacket[]>('SELECT * FROM komisi_anggota WHERE komisi_id = ?', [id]);
     
     return NextResponse.json({ success: true, data: { ...komisi, anggota: anggotaRows } });
   } catch (error) {
@@ -20,8 +21,9 @@ export async function GET(request: Request, { params }: { params: { id: string }
   }
 }
 
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
+export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const { name, members, subKomisi } = await request.json();
     let members_count = members ? members.length : 0;
     
@@ -35,18 +37,18 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     
     await pool.query(
       'UPDATE komisi SET name = ?, members_count = ? WHERE id = ?',
-      [name, members_count, params.id]
+      [name, members_count, id]
     );
     
     // Reset anggota
-    await pool.query('DELETE FROM komisi_anggota WHERE komisi_id = ?', [params.id]);
+    await pool.query('DELETE FROM komisi_anggota WHERE komisi_id = ?', [id]);
     
     if (members && members.length > 0) {
       for (const member of members) {
         if (member.nama) {
           await pool.query(
             'INSERT INTO komisi_anggota (komisi_id, nama, jabatan, no_hp, sub_komisi_name) VALUES (?, ?, ?, ?, NULL)',
-            [params.id, member.nama, member.jabatan || '', member.no_hp || '']
+            [id, member.nama, member.jabatan || '', member.no_hp || '']
           );
         }
       }
@@ -59,7 +61,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
             if (member.nama) {
               await pool.query(
                 'INSERT INTO komisi_anggota (komisi_id, nama, jabatan, no_hp, sub_komisi_name) VALUES (?, ?, ?, ?, ?)',
-                [params.id, member.nama, member.jabatan || '', member.no_hp || '', sub.name]
+                [id, member.nama, member.jabatan || '', member.no_hp || '', sub.name]
               );
             }
           }
@@ -74,16 +76,33 @@ export async function PUT(request: Request, { params }: { params: { id: string }
   }
 }
 
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getSession();
     if (!session || session.role !== 'ADMIN') {
       return NextResponse.json({ success: false, error: 'Unauthorized. Only ADMIN can perform this action.' }, { status: 403 });
     }
 
-    await pool.query('DELETE FROM komisi WHERE id = ?', [params.id]);
+    const { id } = await params;
+    const connection = await pool.getConnection();
+    try {
+      await connection.beginTransaction();
+      await connection.query('DELETE FROM komisi_anggota WHERE komisi_id = ?', [id]);
+      const [result] = await connection.query('DELETE FROM komisi WHERE id = ?', [id]);
+      if ((result as { affectedRows: number }).affectedRows === 0) {
+        await connection.rollback();
+        return NextResponse.json({ success: false, error: 'Komisi tidak ditemukan' }, { status: 404 });
+      }
+      await connection.commit();
+    } catch (deleteError) {
+      await connection.rollback();
+      throw deleteError;
+    } finally {
+      connection.release();
+    }
     return NextResponse.json({ success: true });
-  } catch (error) {
-    return NextResponse.json({ success: false, error: 'Failed to delete' }, { status: 500 });
+  } catch (error: any) {
+    console.error('Failed to delete komisi:', error);
+    return NextResponse.json({ success: false, error: error?.sqlMessage || 'Gagal menghapus komisi' }, { status: 500 });
   }
 }

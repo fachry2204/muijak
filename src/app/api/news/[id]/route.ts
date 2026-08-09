@@ -32,6 +32,9 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     const slug = formData.get('slug') as string;
     const category_id = formData.get('category_id') as string;
     const status = (formData.get('status') as string) || 'DRAFT';
+    const meta_title = (formData.get('meta_title') as string) || title_id;
+    const meta_desc = (formData.get('meta_desc') as string) || '';
+    const meta_keywords = (formData.get('meta_keywords') as string) || '';
     let content_id = (formData.get('content_id') as string) || '';
     const published_at_raw = formData.get('published_at') as string | null;
     const published_at = status === 'PUBLISHED'
@@ -61,7 +64,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     if (!fs.existsSync(galleryDir)) fs.mkdirSync(galleryDir, { recursive: true });
 
     let imageUpdateQuery = '';
-    let queryParams: any[] = [title_id, slug, category_id, status, published_at];
+    let queryParams: any[] = [title_id, slug, category_id, status, published_at, meta_title, meta_desc, meta_keywords];
     
     if (imageMain && imageMain.size > 0) {
       const ext = path.extname(imageMain.name) || '.jpg';
@@ -96,7 +99,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     queryParams.push(id);
     
     await pool.query(
-      `UPDATE news SET title_id = ?, slug = ?, category_id = ?, status = ?, published_at = ?${imageUpdateQuery}, content_id = ? WHERE id = ?`,
+      `UPDATE news SET title_id = ?, slug = ?, category_id = ?, status = ?, published_at = ?, meta_title = ?, meta_desc = ?, meta_keywords = ?${imageUpdateQuery}, content_id = ? WHERE id = ?`,
       queryParams
     );
     

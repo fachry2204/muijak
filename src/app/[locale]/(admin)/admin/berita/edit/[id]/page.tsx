@@ -51,13 +51,25 @@ export default function EditBeritaPage({ params }: { params: Promise<{ id: strin
 
   useEffect(() => {
     if (titleWatch && !fetching) {
-      // Don't auto-override slug if we just fetched from DB, but user wants it identical.
-      // We will only do this if it's identical logic.
       const words = titleWatch.split(/\s+/).filter((w: string) => w.length > 3);
       const keywords = [...new Set(['MUI DKI', 'Berita', ...words])].join(', ');
-      // setValue('meta_keywords', keywords); // Optional for edit
+      setValue('meta_title', titleWatch);
+      setValue('meta_keywords', keywords);
+      setKeywordTags(keywords.split(',').map((keyword) => keyword.trim()).filter(Boolean));
     }
-  }, [titleWatch, fetching]);
+  }, [titleWatch, fetching, setValue]);
+
+  useEffect(() => {
+    if (contentWatch && !fetching) {
+      const plainText = contentWatch
+        .replace(/<[^>]+>/g, ' ')
+        .replace(/&nbsp;/gi, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .substring(0, 160);
+      setValue('meta_desc', plainText);
+    }
+  }, [contentWatch, fetching, setValue]);
 
   const mainImageFile = watch('image_main');
 
@@ -115,6 +127,12 @@ export default function EditBeritaPage({ params }: { params: Promise<{ id: strin
           setValue('slug', news.slug);
           setValue('status', news.status);
           setValue('youtube_url', news.youtube_url || '');
+          setValue('meta_title', news.meta_title || news.title_id || '');
+          setValue('meta_desc', news.meta_desc || '');
+          setValue('meta_keywords', news.meta_keywords || '');
+          if (news.meta_keywords) {
+            setKeywordTags(news.meta_keywords.split(',').map((keyword: string) => keyword.trim()).filter(Boolean));
+          }
           // Set published_at from DB (format YYYY-MM-DD for date input)
           if (news.published_at) {
             setValue('published_at', new Date(news.published_at).toISOString().split('T')[0]);
@@ -147,6 +165,8 @@ export default function EditBeritaPage({ params }: { params: Promise<{ id: strin
       formData.append('status', submitType);
       if (data.published_at) formData.append('published_at', data.published_at);
       if (data.meta_title) formData.append('meta_title', data.meta_title);
+      if (data.meta_desc) formData.append('meta_desc', data.meta_desc);
+      formData.append('meta_keywords', keywordTags.join(', '));
       
       if (data.image_main && data.image_main[0] && typeof data.image_main[0] !== 'string') {
         formData.append('image_main', data.image_main[0]);

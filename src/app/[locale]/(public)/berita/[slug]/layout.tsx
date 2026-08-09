@@ -11,6 +11,9 @@ type NewsMetadataRow = {
   content_en: string | null;
   content_ar: string | null;
   image_url: string | null;
+  meta_title: string | null;
+  meta_desc: string | null;
+  meta_keywords: string | null;
 };
 
 export async function generateMetadata({
@@ -20,7 +23,8 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const {locale, slug} = await params;
   const [rows] = await pool.query(
-    `SELECT title_id, title_en, title_ar, content_id, content_en, content_ar, image_url
+    `SELECT title_id, title_en, title_ar, content_id, content_en, content_ar, image_url,
+            meta_title, meta_desc, meta_keywords
      FROM news
      WHERE slug = ? AND UPPER(status) = 'PUBLISHED'
      LIMIT 1`,
@@ -40,27 +44,29 @@ export async function generateMetadata({
     : locale === 'en'
       ? article.content_en || article.content_id
       : article.content_id;
-  const description = createDescription(content);
+  const seoTitle = article.meta_title || title;
+  const description = article.meta_desc || createDescription(content);
   const localePath = locale === 'id' ? '' : `/${locale}`;
   const articleUrl = `${getSiteUrl()}${localePath}/berita/${encodeURIComponent(slug)}`;
   const imageUrl = absoluteUrl(article.image_url);
 
   return {
-    title,
+    title: seoTitle,
     description,
+    keywords: article.meta_keywords?.split(',').map((keyword) => keyword.trim()).filter(Boolean),
     alternates: {canonical: articleUrl},
     openGraph: {
       type: 'article',
       siteName: 'MUI Jakarta',
       locale: locale === 'id' ? 'id_ID' : locale === 'ar' ? 'ar_SA' : 'en_US',
       url: articleUrl,
-      title,
+      title: seoTitle,
       description,
-      images: [{url: imageUrl, alt: title}],
+      images: [{url: imageUrl, alt: seoTitle}],
     },
     twitter: {
       card: 'summary_large_image',
-      title,
+      title: seoTitle,
       description,
       images: [imageUrl],
     },

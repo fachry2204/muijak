@@ -50,6 +50,7 @@ export default function CreateBeritaPage() {
       const words = titleWatch.split(/\s+/).filter((w: string) => w.length > 3);
       const keywords = [...new Set(['MUI DKI', 'Berita', ...words])].join(', ');
       setValue('meta_keywords', keywords);
+      setKeywordTags(keywords.split(',').map((keyword) => keyword.trim()).filter(Boolean));
     }
   }, [titleWatch, setValue]);
 
@@ -124,6 +125,7 @@ export default function CreateBeritaPage() {
       if (data.published_at) formData.append('published_at', data.published_at);
       if (data.meta_title) formData.append('meta_title', data.meta_title);
       if (data.meta_desc) formData.append('meta_desc', data.meta_desc);
+      formData.append('meta_keywords', keywordTags.join(', '));
 
       if (data.image_main && data.image_main[0]) {
         formData.append('image_main', data.image_main[0]);

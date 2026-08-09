@@ -3,6 +3,7 @@ import pool from '@/lib/db';
 import { RowDataPacket } from 'mysql2';
 
 import { getSession } from '@/lib/auth';
+import bcrypt from 'bcryptjs';
 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> | { id: string } }) {
   try {
@@ -50,17 +51,29 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     const updates = [];
     const values = [];
 
-    if (body.status !== undefined) {
+    const statusMap: Record<string, string> = {
+      APPROVED: 'APPROVED', Aktif: 'APPROVED', PENDING: 'PENDING',
+      REJECTED: 'REJECTED', 'Non-Aktif': 'REJECTED'
+    };
+    const roleMap: Record<string, string> = {
+      ADMIN: 'ADMIN', STAFF: 'STAFF', EDITOR: 'STAFF', ANGGOTA: 'ANGGOTA', USER: 'ANGGOTA'
+    };
+
+    if (body.status !== undefined && statusMap[body.status]) {
       updates.push('status = ?');
-      values.push(body.status);
+      values.push(statusMap[body.status]);
     }
-    if (body.role !== undefined) {
+    if (body.role !== undefined && roleMap[body.role]) {
       updates.push('role = ?');
-      values.push(body.role);
+      values.push(roleMap[body.role]);
     }
     if (body.name !== undefined) {
       updates.push('name = ?');
       values.push(body.name);
+    }
+    if (body.password) {
+      updates.push('password = ?');
+      values.push(await bcrypt.hash(body.password, 10));
     }
     
     if (updates.length === 0) {

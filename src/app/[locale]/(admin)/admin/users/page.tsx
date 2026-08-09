@@ -16,7 +16,7 @@ export default function AdminUsersPage() {
   // Modal state
   const [userModalOpen, setUserModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<any | null>(null);
-  const [userForm, setUserForm] = useState({ name: '', email: '', password: '', role: 'ADMIN', status: 'Aktif' });
+  const [userForm, setUserForm] = useState({ name: '', email: '', password: '', role: 'ADMIN', status: 'APPROVED' });
   const [isSavingUser, setIsSavingUser] = useState(false);
 
   const fetchUsers = async () => {
@@ -38,13 +38,13 @@ export default function AdminUsersPage() {
 
   const handleOpenAddUser = () => {
     setEditingUser(null);
-    setUserForm({ name: '', email: '', password: '', role: 'ADMIN', status: 'Aktif' });
+    setUserForm({ name: '', email: '', password: '', role: 'ADMIN', status: 'APPROVED' });
     setUserModalOpen(true);
   };
 
   const handleOpenEditUser = (user: any) => {
     setEditingUser(user);
-    setUserForm({ name: user.name, email: user.email, password: '', role: user.role, status: user.status || 'Aktif' });
+    setUserForm({ name: user.name, email: user.email, password: '', role: user.role, status: user.status || 'APPROVED' });
     setUserModalOpen(true);
   };
 
@@ -105,7 +105,7 @@ export default function AdminUsersPage() {
   );
 
   const adminCount = users.filter(u => u.role === 'ADMIN').length;
-  const activeCount = users.filter(u => (u.status || 'Aktif') === 'Aktif').length;
+  const activeCount = users.filter(u => (u.status || 'APPROVED') === 'APPROVED').length;
 
   return (
     <div className="space-y-6">
@@ -202,16 +202,16 @@ export default function AdminUsersPage() {
                       <td className="px-6 py-4 text-center">
                         <span className={`px-3 py-1 rounded-full text-[11px] font-bold tracking-wider ${
                           user.role === 'ADMIN' ? 'bg-purple-100 text-purple-700' : 
-                          user.role === 'EDITOR' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-700'
+                          user.role === 'STAFF' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-700'
                         }`}>
                           {user.role}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-center">
                         <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${
-                          (user.status || 'Aktif') === 'Aktif' ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'
+                          (user.status || 'APPROVED') === 'APPROVED' ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'
                         }`}>
-                          {user.status || 'Aktif'}
+                          {user.status === 'APPROVED' ? 'Aktif' : user.status === 'PENDING' ? 'Menunggu' : 'Non-Aktif'}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-slate-500 text-xs">
@@ -294,8 +294,8 @@ export default function AdminUsersPage() {
                     onChange={(e) => setUserForm(prev => ({ ...prev, role: e.target.value }))}
                   >
                     <option value="ADMIN">ADMIN (Full Access)</option>
-                    <option value="EDITOR">EDITOR (Content Only)</option>
-                    <option value="USER">USER (View Only)</option>
+                    <option value="STAFF">STAFF (Content Only)</option>
+                    <option value="ANGGOTA">ANGGOTA (View Only)</option>
                   </select>
                 </div>
                 <div className="space-y-1">
@@ -305,8 +305,9 @@ export default function AdminUsersPage() {
                     value={userForm.status}
                     onChange={(e) => setUserForm(prev => ({ ...prev, status: e.target.value }))}
                   >
-                    <option value="Aktif">Aktif</option>
-                    <option value="Non-Aktif">Non-Aktif</option>
+                    <option value="APPROVED">Aktif</option>
+                    <option value="PENDING">Menunggu Persetujuan</option>
+                    <option value="REJECTED">Non-Aktif</option>
                   </select>
                 </div>
               </div>

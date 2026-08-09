@@ -60,6 +60,8 @@ export default function FooterMap({
     if (!mapRef.current) return;
 
     let cancelled = false;
+    let resizeObserver: ResizeObserver | null = null;
+    const resizeTimers: number[] = [];
 
     if (mapInstanceRef.current) {
       mapInstanceRef.current.remove();
@@ -86,15 +88,27 @@ export default function FooterMap({
         zoom,
         zoomControl: true,
         scrollWheelZoom: false,
-        attributionControl: false,
+        attributionControl: true,
         doubleClickZoom: false,
       });
 
       mapInstanceRef.current = map;
 
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
       }).addTo(map);
+
+      // Hitung ulang ukuran ketika tab, sidebar, atau kontainer berubah ukuran.
+      const refreshMapSize = () => map.invalidateSize({pan: false});
+      requestAnimationFrame(refreshMapSize);
+      resizeTimers.push(window.setTimeout(refreshMapSize, 150));
+      resizeTimers.push(window.setTimeout(refreshMapSize, 500));
+
+      if (mapRef.current && typeof ResizeObserver !== 'undefined') {
+        resizeObserver = new ResizeObserver(refreshMapSize);
+        resizeObserver.observe(mapRef.current);
+      }
 
       const customIcon = L.divIcon({
         className: '',
@@ -131,6 +145,8 @@ export default function FooterMap({
 
     return () => {
       cancelled = true;
+      resizeObserver?.disconnect();
+      resizeTimers.forEach((timer) => window.clearTimeout(timer));
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
@@ -148,8 +164,8 @@ export default function FooterMap({
       />
       <div
         ref={mapRef}
-        className="w-full h-full"
-        style={{ minHeight: '176px', background: '#e5e3df' }}
+        className="h-full w-full"
+        style={{ minHeight: '176px', width: '100%', height: '100%', background: '#e5e3df' }}
       />
     </>
   );
