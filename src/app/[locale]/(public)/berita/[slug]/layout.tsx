@@ -22,10 +22,10 @@ export async function generateMetadata({
   params: Promise<{locale: string; slug: string}>;
 }): Promise<Metadata> {
   const {locale, slug} = await params;
+  // SELECT * menjaga halaman tetap kompatibel bila migrasi kolom SEO di server
+  // belum dijalankan; properti SEO akan menggunakan fallback judul dan isi berita.
   const [rows] = await pool.query(
-    `SELECT title_id, title_en, title_ar, content_id, content_en, content_ar, image_url,
-            meta_title, meta_desc, meta_keywords
-     FROM news
+    `SELECT * FROM news
      WHERE slug = ? AND UPPER(status) = 'PUBLISHED'
      LIMIT 1`,
     [slug]

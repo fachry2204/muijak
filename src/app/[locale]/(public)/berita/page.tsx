@@ -5,8 +5,11 @@ import { Calendar, Search, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useState, useEffect } from 'react';
+import {useLocale, useTranslations} from 'next-intl';
 
 export default function BeritaPage() {
+  const locale = useLocale();
+  const t = useTranslations('NewsPage');
   const [allNews, setAllNews] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -14,6 +17,7 @@ export default function BeritaPage() {
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [translations, setTranslations] = useState<Record<string, string>>({});
 
   useEffect(() => {
     Promise.all([
@@ -22,7 +26,28 @@ export default function BeritaPage() {
     ])
       .then(([newsData, catData]) => {
         if (newsData.success && newsData.data) {
-          setAllNews(newsData.data.filter((n: any) => String(n.status).toUpperCase() === 'PUBLISHED'));
+          const published = newsData.data.filter((n: any) => String(n.status).toUpperCase() === 'PUBLISHED');
+          setAllNews(published);
+
+          if (locale !== 'id') {
+            const texts = [...new Set(published.flatMap((news: any) => [
+              news.title_id,
+              news.content_id?.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().substring(0, 150),
+              news.category_name,
+            ]).filter(Boolean))].slice(0, 40) as string[];
+            fetch('/api/translate', {
+              method: 'POST',
+              headers: {'Content-Type': 'application/json'},
+              body: JSON.stringify({texts, target: locale}),
+            })
+              .then((response) => response.json())
+              .then((result) => {
+                if (result.success) {
+                  setTranslations(Object.fromEntries(texts.map((text, index) => [text, result.data[index]])));
+                }
+              })
+              .catch(() => undefined);
+          }
         }
         if (catData.success && catData.data) {
           setCategories(catData.data);
@@ -33,11 +58,18 @@ export default function BeritaPage() {
         console.error("Error fetching data:", err);
         setLoading(false);
       });
-  }, []);
+  }, [locale]);
+
+  const localized = (indonesian: string, english?: string | null, arabic?: string | null) => {
+    if (locale === 'en' && english) return english;
+    if (locale === 'ar' && arabic) return arabic;
+    return translations[indonesian] || indonesian;
+  };
 
   const filteredNews = allNews.filter(news => {
     const matchCategory = activeCategory === 'all' || news.category_id === parseInt(activeCategory);
-    const matchSearch = news.title_id.toLowerCase().includes(searchQuery.toLowerCase());
+    const displayTitle = localized(news.title_id, news.title_en, news.title_ar);
+    const matchSearch = displayTitle.toLowerCase().includes(searchQuery.toLowerCase());
     return matchCategory && matchSearch;
   });
 
@@ -72,9 +104,9 @@ export default function BeritaPage() {
              style={{ backgroundSize: '200px' }}>
         </div>
         <div className="max-w-[1200px] mx-auto px-4 relative z-10 text-center">
-          <h1 className="text-4xl md:text-5xl font-black text-emerald-300 mb-4 uppercase tracking-tight">Berita Terbaru</h1>
+          <h1 className="text-4xl md:text-5xl font-black text-emerald-300 mb-4 uppercase tracking-tight">{t('title')}</h1>
           <p className="text-emerald-100/90 text-lg max-w-2xl mx-auto">
-            Ikuti perkembangan informasi, kegiatan, dan liputan seputar Majelis Ulama Indonesia Provinsi DKI Jakarta.
+            {t('description')}
           </p>
         </div>
       </div>
@@ -90,7 +122,7 @@ export default function BeritaPage() {
               className={activeCategory === 'all' ? 'bg-[#0f5132] hover:bg-[#0b3c22]' : 'text-slate-600'}
               onClick={() => { setActiveCategory('all'); setCurrentPage(1); }}
             >
-              Semua Berita
+              {t('all')}
             </Button>
             {categories.map((cat) => (
               <Button 
@@ -99,7 +131,7 @@ export default function BeritaPage() {
                 className={activeCategory === cat.id.toString() ? 'bg-[#0f5132] hover:bg-[#0b3c22]' : 'text-slate-600'}
                 onClick={() => { setActiveCategory(cat.id.toString()); setCurrentPage(1); }}
               >
-                {cat.name_id}
+                {localized(cat.name_id, cat.name_en, cat.name_ar)}
               </Button>
             ))}
           </div>
@@ -107,7 +139,7 @@ export default function BeritaPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <Input 
               className="pl-9 h-10 border-slate-200 focus:border-[#0f5132] focus:ring-[#0f5132]" 
-              placeholder="Cari berita..." 
+              placeholder={t('search')}
               value={searchQuery}
               onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
             />
@@ -115,9 +147,9 @@ export default function BeritaPage() {
         </div>
 
         {loading ? (
-          <div className="text-center py-20 text-slate-500 font-medium">Memuat berita...</div>
+          <div className="text-center py-20 text-slate-500 font-medium">{t('loading')}</div>
         ) : allNews.length === 0 ? (
-          <div className="text-center py-20 text-slate-500 font-medium">Belum ada berita.</div>
+          <div className="text-center py-20 text-slate-500 font-medium">{t('empty')}</div>
         ) : (
           <>
             {/* Grid List */}
@@ -125,10 +157,10 @@ export default function BeritaPage() {
               {currentNews.map((news, i) => (
                 <Link href={`/berita/${news.slug}`} key={news.id || i} className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all hover:-translate-y-1 group flex flex-col border border-slate-100">
                   <div className="h-40 overflow-hidden relative">
-                    <img src={news.image_url} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt={news.title_id} />
+                    <img src={news.image_url} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt={localized(news.title_id, news.title_en, news.title_ar)} />
                     <div className="absolute top-3 left-3 flex gap-1">
                       <span className={`text-[10px] font-bold text-white px-2 py-1 rounded shadow-sm uppercase bg-emerald-600`}>
-                        {news.category_name || 'Berita'}
+                        {localized(news.category_name || 'Berita')}
                       </span>
                     </div>
                   </div>
@@ -144,11 +176,13 @@ export default function BeritaPage() {
                       </div>
                     </div>
                     <h3 className="text-lg font-bold text-slate-800 mb-3 group-hover:text-emerald-600 transition-colors line-clamp-2 leading-snug">
-                      {news.title_id}
+                      {localized(news.title_id, news.title_en, news.title_ar)}
                     </h3>
-                    <div className="text-slate-600 text-sm line-clamp-3 mb-4 flex-1" dangerouslySetInnerHTML={{ __html: news.content_id?.replace(/<[^>]+>/g, '').substring(0, 150) + '...' || '' }} />
+                    <div className="text-slate-600 text-sm line-clamp-3 mb-4 flex-1">
+                      {localized(news.content_id?.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().substring(0, 150) || '', news.content_en, news.content_ar)}...
+                    </div>
                     <div className="text-emerald-600 font-bold text-sm flex items-center gap-1 group-hover:gap-2 transition-all">
-                      Baca Selengkapnya <span>&rarr;</span>
+                      {t('readMore')} <span>&rarr;</span>
                     </div>
                   </div>
                 </Link>

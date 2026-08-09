@@ -4,9 +4,11 @@ import { useParams } from 'next/navigation';
 import { Link } from '@/i18n/routing';
 import { Share2, Globe, MessageCircle, Link as LinkIcon, ChevronRight, Calendar, User, Eye, Tag } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import {useLocale} from 'next-intl';
 
 export default function ReadNewsPage() {
   const params = useParams();
+  const locale = useLocale();
   const slug = params?.slug as string;
   const [article, setArticle] = useState<any>(null);
   const [allNews, setAllNews] = useState<any[]>([]);
@@ -24,13 +26,38 @@ export default function ReadNewsPage() {
             // Increment view locally and remotely
             found.views = (found.views || 0) + 1;
             setArticle(found);
+
+            if (locale !== 'id') {
+              const localizedTitle = locale === 'ar' ? found.title_ar : found.title_en;
+              const localizedContent = locale === 'ar' ? found.content_ar : found.content_en;
+              const texts = [
+                localizedTitle || found.title_id,
+                localizedContent || found.content_id,
+              ];
+              if (!localizedTitle || !localizedContent) {
+                fetch('/api/translate', {
+                  method: 'POST',
+                  headers: {'Content-Type': 'application/json'},
+                  body: JSON.stringify({texts, target: locale}),
+                })
+                  .then((response) => response.json())
+                  .then((result) => {
+                    if (result.success) {
+                      setArticle({...found, title_id: localizedTitle || result.data[0], content_id: localizedContent || result.data[1]});
+                    }
+                  })
+                  .catch(() => undefined);
+              } else {
+                setArticle({...found, title_id: localizedTitle, content_id: localizedContent});
+              }
+            }
             
             fetch(`/api/news/${found.id}/views`, { method: 'POST' }).catch(console.error);
           }
         }
       })
       .catch(err => console.error(err));
-  }, [slug]);
+  }, [slug, locale]);
 
   const getShareData = () => {
     const url = window.location.href;

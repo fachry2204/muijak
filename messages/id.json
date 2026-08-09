@@ -11,6 +11,17 @@
     "halal": "Halal",
     "pku": "PKU",
     "contact": "Kontak",
-    "login": "Login"
+    "login": "Login",
+    "fatwa": "Fatwa",
+    "gallery": "Galeri"
+  },
+  "NewsPage": {
+    "title": "Berita Terbaru",
+    "description": "Ikuti perkembangan informasi, kegiatan, dan liputan seputar Majelis Ulama Indonesia Provinsi DKI Jakarta.",
+    "all": "Semua Berita",
+    "search": "Cari berita...",
+    "readMore": "Baca Selengkapnya",
+    "loading": "Memuat berita...",
+    "empty": "Belum ada berita."
   }
 }

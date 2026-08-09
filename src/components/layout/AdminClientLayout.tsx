@@ -7,7 +7,7 @@ import axios from 'axios';
 import { 
   Menu, Search, Bell, Maximize, Moon, ChevronDown, 
   LayoutDashboard, FileText, Tags, Building2, UsersRound, 
-  MenuSquare, Settings, Users, LogOut, ChevronRight, BookOpen, ExternalLink, LineChart, MapPin, HelpCircle, Images
+  Settings, Users, LogOut, BookOpen, ExternalLink, LineChart, MapPin, HelpCircle, Images, UserCircle
 } from 'lucide-react';
 
 export default function AdminClientLayout({ children, session }: { children: React.ReactNode, session: any }) {
@@ -47,6 +47,7 @@ export default function AdminClientLayout({ children, session }: { children: Rea
     {
       title: "SYSTEM",
       items: [
+        { name: "Profil Saya", href: "/admin/profile", icon: UserCircle },
         { name: "Statistik Web", href: "/admin/analytics", icon: LineChart },
         ...(session?.role === 'ADMIN' ? [{ name: "Data User", href: "/admin/users", icon: Users }] : []),
         { name: "Pengaturan", href: "/admin/settings", icon: Settings }
@@ -133,14 +134,10 @@ export default function AdminClientLayout({ children, session }: { children: Rea
             
             <div className="w-px h-6 bg-slate-200 mx-2"></div>
             
-            <Link href="/admin/settings" className="flex items-center gap-3 cursor-pointer hover:bg-slate-50 p-1.5 pr-2 rounded-lg transition-colors border border-transparent hover:border-slate-100">
-              <img 
-                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop" 
-                alt="User Avatar" 
-                className="w-8 h-8 rounded-full object-cover"
-              />
+            <Link href="/admin/profile" className="flex items-center gap-3 cursor-pointer hover:bg-slate-50 p-1.5 pr-2 rounded-lg transition-colors border border-transparent hover:border-slate-100">
+              {session?.avatar_url ? <img src={session.avatar_url} alt={session?.name || 'User Avatar'} className="w-8 h-8 rounded-full object-cover" /> : <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-emerald-700">{(session?.name || session?.email || 'U').slice(0, 2).toUpperCase()}</div>}
               <div className="hidden md:flex flex-col">
-                <span className="text-sm font-bold text-slate-700 leading-tight">{session?.email ? session.email.split('@')[0] : 'Admin User'}</span>
+                <span className="text-sm font-bold text-slate-700 leading-tight">{session?.name || (session?.email ? session.email.split('@')[0] : 'Admin User')}</span>
                 <span className="text-[10px] font-medium text-slate-400">{session?.role}</span>
               </div>
             </Link>

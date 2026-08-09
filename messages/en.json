@@ -11,6 +11,17 @@
     "halal": "Halal",
     "pku": "PKU",
     "contact": "Contact",
-    "login": "Login"
+    "login": "Login",
+    "fatwa": "Fatwa",
+    "gallery": "Gallery"
+  },
+  "NewsPage": {
+    "title": "Latest News",
+    "description": "Follow the latest information, activities, and coverage from the Indonesian Ulema Council of Jakarta.",
+    "all": "All News",
+    "search": "Search news...",
+    "readMore": "Read More",
+    "loading": "Loading news...",
+    "empty": "No news available."
   }
 }

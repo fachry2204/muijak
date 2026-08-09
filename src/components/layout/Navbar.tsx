@@ -66,10 +66,10 @@ export function Navbar({ locale, dynamicMenus = [], session = null }: { locale: 
 
   type NavLink = { href: string; label: string; isExternal?: boolean; subMenus?: { href: string; label: string }[] };
   const defaultNavLinks: NavLink[] = [
-    { href: '/', label: 'Beranda' },
+    { href: '/', label: tNav('home') },
     { 
       href: '/profil', 
-      label: 'Profil',
+      label: tNav('profile'),
       subMenus: [
         { href: '/profil/sejarah', label: 'Sejarah' },
         { href: '/profil/visi-misi', label: 'Visi Misi' },
@@ -80,12 +80,12 @@ export function Navbar({ locale, dynamicMenus = [], session = null }: { locale: 
     },
     { 
       href: '/berita', 
-      label: 'Berita'
+      label: tNav('news')
     },
-    { href: '/komisi', label: 'Bidang & Komisi' },
-    { href: '/fatwa', label: 'Fatwa' },
-    { href: '/galeri', label: 'Galeri' },
-    { href: '/kontak', label: 'Kontak' },
+    { href: '/komisi', label: tNav('commission') },
+    { href: '/fatwa', label: tNav('fatwa') },
+    { href: '/galeri', label: tNav('gallery') },
+    { href: '/kontak', label: tNav('contact') },
   ];
 
   const getLocalizedTitle = (menu: any) => {
@@ -139,10 +139,10 @@ export function Navbar({ locale, dynamicMenus = [], session = null }: { locale: 
         </div>
       </div>
       <div className="relative w-full h-20">
-        <div className="max-w-[1200px] mx-auto px-4 h-full flex items-center w-full">
+        <div className={`max-w-[1200px] mx-auto px-4 h-full flex items-center w-full ${locale === 'ar' ? 'flex-row-reverse' : ''}`}>
         
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-3 relative z-10 mr-12">
+        <Link href="/" className={`flex items-center gap-3 relative z-10 ${locale === 'ar' ? 'ml-12' : 'mr-12'}`}>
           <img src={settings.header_logo || settings.website_logo || "/gambar/logoweb.png"} alt="MUI Logo" className="h-16 w-auto" />
         </Link>
 
@@ -193,14 +193,14 @@ export function Navbar({ locale, dynamicMenus = [], session = null }: { locale: 
         </div>
 
         {/* Right Icons (Desktop) */}
-        <div className="hidden xl:flex items-center gap-5 absolute right-6 md:right-8 top-1/2 -translate-y-1/2 z-20">
+        <div className={`hidden xl:flex items-center gap-5 absolute top-1/2 -translate-y-1/2 z-20 ${locale === 'ar' ? 'left-6 md:left-8 flex-row-reverse' : 'right-6 md:right-8'}`}>
           <div className="w-px h-6 bg-gray-200 mx-1"></div>
           <button className="text-[#074c2e] hover:text-emerald-500 transition-colors">
             <Search className="w-5 h-5" />
           </button>
           {session ? (
             <div className="flex items-center gap-3">
-              <Link href="/admin" className="flex items-center gap-2 text-[#074c2e] hover:text-emerald-500 font-bold text-sm">
+              <Link href="/admin/profile" className="flex items-center gap-2 text-[#074c2e] hover:text-emerald-500 font-bold text-sm">
                 <UserCircle className="w-5 h-5" /> {session.email.split('@')[0]}
               </Link>
               <button onClick={handleLogout} className="flex items-center gap-2 bg-red-600/90 hover:bg-red-600 text-white px-4 py-2 rounded-full font-bold transition-colors text-sm shadow-sm">
@@ -254,7 +254,7 @@ export function Navbar({ locale, dynamicMenus = [], session = null }: { locale: 
               </div>
               {session ? (
                 <div className="flex flex-col gap-2 w-full mt-2">
-                  <Link href="/admin" className="flex items-center justify-center gap-2 bg-emerald-50 text-emerald-800 px-4 py-3 rounded-lg font-bold" onClick={() => setMobileMenuOpen(false)}>
+                  <Link href="/admin/profile" className="flex items-center justify-center gap-2 bg-emerald-50 text-emerald-800 px-4 py-3 rounded-lg font-bold" onClick={() => setMobileMenuOpen(false)}>
                     <UserCircle className="w-5 h-5" /> {session.email.split('@')[0]}
                   </Link>
                   <button onClick={handleLogout} className="flex items-center justify-center gap-2 bg-red-600 text-white px-4 py-3 rounded-lg font-bold">
