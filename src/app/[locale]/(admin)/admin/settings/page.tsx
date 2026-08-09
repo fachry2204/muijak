@@ -161,7 +161,7 @@ export default function SettingsManagementPage() {
     setIsSavingUser(true);
     try {
       if (editingUser) {
-        const payload: any = { name: userForm.name, role: userForm.role, status: userForm.status };
+        const payload: any = { name: userForm.name, email: userForm.email, role: userForm.role, status: userForm.status };
         if (userForm.password) payload.password = userForm.password;
         const res = await axios.put(`/api/users/${editingUser.id}`, payload);
         if (res.data.success) {

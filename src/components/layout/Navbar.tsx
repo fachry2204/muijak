@@ -108,7 +108,7 @@ export function Navbar({ locale, dynamicMenus = [], session = null }: { locale: 
   };
 
   return (
-    <header className="w-full bg-white text-[#074c2e] sticky top-0 z-50 shadow-sm border-b border-gray-100 relative">
+    <header dir="ltr" className="w-full bg-white text-[#074c2e] sticky top-0 z-50 shadow-sm border-b border-gray-100 relative">
       {/* Top Bar */}
       <div className="hidden md:flex bg-[#043b23] text-[11px] lg:text-xs py-2 px-4 justify-center gap-12 lg:gap-24 items-center text-emerald-100/90 font-medium tracking-wide">
         <div className="flex items-center gap-6">
@@ -139,10 +139,10 @@ export function Navbar({ locale, dynamicMenus = [], session = null }: { locale: 
         </div>
       </div>
       <div className="relative w-full h-20">
-        <div className={`max-w-[1200px] mx-auto px-4 h-full flex items-center w-full ${locale === 'ar' ? 'flex-row-reverse' : ''}`}>
+        <div className="max-w-[1200px] mx-auto px-4 h-full flex items-center w-full">
         
         {/* Logo */}
-        <Link href="/" className={`flex items-center gap-3 relative z-10 ${locale === 'ar' ? 'ml-12' : 'mr-12'}`}>
+        <Link href="/" className="flex items-center gap-3 relative z-10 mr-12 shrink-0">
           <img src={settings.header_logo || settings.website_logo || "/gambar/logoweb.png"} alt="MUI Logo" className="h-16 w-auto" />
         </Link>
 
@@ -159,14 +159,14 @@ export function Navbar({ locale, dynamicMenus = [], session = null }: { locale: 
                     rel="noopener noreferrer"
                     className={`flex items-center gap-1 py-5 transition-colors hover:text-emerald-500 text-[#074c2e]`}
                   >
-                    {link.label}
+                    <span dir={locale === 'ar' ? 'rtl' : 'ltr'}>{link.label}</span>
                   </a>
                 ) : (
                   <Link 
                     href={link.href}
                     className={`flex items-center gap-1 py-5 transition-colors hover:text-emerald-500 ${isActive ? 'text-emerald-600' : 'text-[#074c2e]'}`}
                   >
-                    {link.label}
+                    <span dir={locale === 'ar' ? 'rtl' : 'ltr'}>{link.label}</span>
                     {link.subMenus && <ChevronDown className="w-4 h-4" />}
                   </Link>
                 )}
@@ -181,7 +181,7 @@ export function Navbar({ locale, dynamicMenus = [], session = null }: { locale: 
                         href={sub.href}
                         className="px-5 py-2.5 text-slate-700 hover:text-emerald-600 hover:bg-emerald-50 text-[14px] font-semibold transition-colors"
                       >
-                        {sub.label}
+                        <span dir={locale === 'ar' ? 'rtl' : 'ltr'}>{sub.label}</span>
                       </Link>
                     ))}
                   </div>
@@ -193,7 +193,7 @@ export function Navbar({ locale, dynamicMenus = [], session = null }: { locale: 
         </div>
 
         {/* Right Icons (Desktop) */}
-        <div className={`hidden xl:flex items-center gap-5 absolute top-1/2 -translate-y-1/2 z-20 ${locale === 'ar' ? 'left-6 md:left-8 flex-row-reverse' : 'right-6 md:right-8'}`}>
+        <div className="hidden xl:flex items-center gap-5 absolute right-6 md:right-8 top-1/2 -translate-y-1/2 z-20">
           <div className="w-px h-6 bg-gray-200 mx-1"></div>
           <button className="text-[#074c2e] hover:text-emerald-500 transition-colors">
             <Search className="w-5 h-5" />
