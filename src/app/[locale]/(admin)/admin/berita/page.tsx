@@ -33,7 +33,7 @@ export default function BeritaAdminPage() {
       if (resNews.data.success) {
         // Filter by tab and category
         const filtered = resNews.data.data.filter((n: any) => {
-          const matchTab = n.status === activeTab;
+          const matchTab = String(n.status).toUpperCase() === activeTab;
           const matchCat = categoryFilter === 'ALL' || n.category_id == categoryFilter;
           return matchTab && matchCat;
         });
@@ -274,11 +274,11 @@ export default function BeritaAdminPage() {
                       <TableCell>{item.category_name}</TableCell>
                       <TableCell>{item.author_name || 'Admin'}</TableCell>
                       <TableCell>
-                        <span className={`px-2 py-1 rounded-full text-xs font-bold ${item.status === 'PUBLISHED' ? 'bg-emerald-100 text-emerald-700' : (item.status === 'DRAFT' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700')}`}>
-                          {item.status === 'PUBLISHED' ? 'Tayang' : (item.status === 'DRAFT' ? 'Draf' : 'Terhapus')}
+                        <span className={`px-2 py-1 rounded-full text-xs font-bold ${String(item.status).toUpperCase() === 'PUBLISHED' ? 'bg-emerald-100 text-emerald-700' : (String(item.status).toUpperCase() === 'DRAFT' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700')}`}>
+                          {String(item.status).toUpperCase() === 'PUBLISHED' ? 'Tayang' : (String(item.status).toUpperCase() === 'DRAFT' ? 'Draf' : 'Terhapus')}
                         </span>
                       </TableCell>
-                      <TableCell>{item.published_at ? new Date(item.published_at).toLocaleDateString('id-ID') : (item.status === 'PUBLISHED' ? new Date(item.created_at).toLocaleDateString('id-ID') : '-')}</TableCell>
+                      <TableCell>{item.published_at ? new Date(item.published_at).toLocaleDateString('id-ID') : (String(item.status).toUpperCase() === 'PUBLISHED' ? new Date(item.created_at).toLocaleDateString('id-ID') : '-')}</TableCell>
                       <TableCell>
                         {activeTab === 'TRASHED' ? (
                           <div className="text-xs">

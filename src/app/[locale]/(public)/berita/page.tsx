@@ -22,7 +22,7 @@ export default function BeritaPage() {
     ])
       .then(([newsData, catData]) => {
         if (newsData.success && newsData.data) {
-          setAllNews(newsData.data.filter((n: any) => n.status === 'PUBLISHED'));
+          setAllNews(newsData.data.filter((n: any) => String(n.status).toUpperCase() === 'PUBLISHED'));
         }
         if (catData.success && catData.data) {
           setCategories(catData.data);

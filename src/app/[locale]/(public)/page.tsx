@@ -55,7 +55,7 @@ export default function HomePage() {
       .then(res => res.json())
       .then(data => {
         if (data.success && data.data) {
-          setDbNews(data.data.filter((n: any) => n.status === 'PUBLISHED'));
+          setDbNews(data.data.filter((n: any) => String(n.status).toUpperCase() === 'PUBLISHED'));
         }
       })
       .catch(err => console.error("Error fetching news:", err));

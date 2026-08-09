@@ -16,7 +16,7 @@ export default function ReadNewsPage() {
       .then(res => res.json())
       .then(data => {
         if (data.success && data.data) {
-          const publishedNews = data.data.filter((n: any) => n.status === 'PUBLISHED');
+          const publishedNews = data.data.filter((n: any) => String(n.status).toUpperCase() === 'PUBLISHED');
           setAllNews(publishedNews);
           const found = publishedNews.find((n: any) => n.slug === slug);
           if (found) {
