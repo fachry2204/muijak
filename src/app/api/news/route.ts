@@ -2,9 +2,11 @@ import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
 import { RowDataPacket } from 'mysql2';
 import { validateUploadedFile } from '@/lib/fileUpload';
+import { getSession } from '@/lib/auth';
 
 export async function GET() {
   try {
+    const session = await getSession();
     // Bersihkan berita yang sudah berada di tong sampah selama 30 hari.
     try {
       await pool.query(`
@@ -19,11 +21,13 @@ export async function GET() {
       if (errorCode !== 'ER_BAD_FIELD_ERROR') throw cleanupError;
     }
 
+    const publicFilter = session ? '' : "WHERE UPPER(n.status) = 'PUBLISHED'";
     const [rows] = await pool.query<RowDataPacket[]>(`
       SELECT n.*, c.name_id as category_name, u.name as author_name 
       FROM news n 
       LEFT JOIN categories c ON n.category_id = c.id 
       LEFT JOIN users u ON n.author_id = u.id 
+      ${publicFilter}
       ORDER BY n.created_at DESC
     `);
     return NextResponse.json({ success: true, data: rows });
@@ -34,15 +38,22 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    const session = await getSession();
+    if (!session || !['ADMIN', 'STAFF'].includes(session.role)) {
+      return NextResponse.json({ success: false, error: 'Tidak memiliki akses untuk membuat berita.' }, { status: 403 });
+    }
+
     const formData = await request.formData();
     
     const title_id = formData.get('title_id') as string;
-    const slug = formData.get('slug') as string;
+    const requestedSlug = String(formData.get('slug') || '');
+    const slug = requestedSlug.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
     const category_id = formData.get('category_id') as string;
     const status = (formData.get('status') as string) || 'DRAFT';
     const meta_title = (formData.get('meta_title') as string) || title_id;
     const meta_desc = (formData.get('meta_desc') as string) || '';
     const meta_keywords = (formData.get('meta_keywords') as string) || '';
+    const youtube_url = String(formData.get('youtube_url') || '').trim() || null;
     let content_id = (formData.get('content_id') as string) || '';
     const published_at_raw = formData.get('published_at') as string | null;
     // If status is PUBLISHED, use provided date or now; if DRAFT, leave null
@@ -50,6 +61,20 @@ export async function POST(request: Request) {
       ? (published_at_raw ? new Date(published_at_raw) : new Date())
       : (published_at_raw ? new Date(published_at_raw) : null);
     
+    if (!title_id?.trim() || !slug || !content_id?.trim() || !category_id) {
+      return NextResponse.json({ success: false, error: 'Judul, slug, kategori, dan isi berita wajib diisi.' }, { status: 400 });
+    }
+
+    const [existingNews] = await pool.query<RowDataPacket[]>('SELECT id FROM news WHERE slug = ? LIMIT 1', [slug]);
+    if (existingNews.length) {
+      return NextResponse.json({
+        success: true,
+        id: existingNews[0].id,
+        already_saved: true,
+        message: 'Berita ini sudah tersimpan. Anda akan kembali ke daftar berita.'
+      });
+    }
+
     const imageMain = formData.get('image_main') as File | null;
     const galleryFiles = formData.getAll('gallery') as File[];
     
@@ -120,11 +145,6 @@ export async function POST(request: Request) {
       }
     }
     
-    await pool.query(
-      'INSERT INTO news (id, title_id, slug, content_id, category_id, image_url, status, published_at, meta_title, meta_desc, meta_keywords) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [newsId, title_id, slug, content_id, category_id, imageUrl, status, published_at, meta_title, meta_desc, meta_keywords]
-    );
-    
     await pool.query(`
       CREATE TABLE IF NOT EXISTS news_gallery (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -133,12 +153,38 @@ export async function POST(request: Request) {
         FOREIGN KEY (news_id) REFERENCES news(id) ON DELETE CASCADE
       )
     `);
-    
-    for (const url of galleryUrls) {
-      await pool.query('INSERT INTO news_gallery (news_id, image_url) VALUES (?, ?)', [newsId, url]);
+
+    const connection = await pool.getConnection();
+    try {
+      await connection.beginTransaction();
+      await connection.query(
+        'INSERT INTO news (id, title_id, slug, content_id, category_id, author_id, image_url, youtube_url, status, published_at, meta_title, meta_desc, meta_keywords) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        [newsId, title_id.trim(), slug, content_id, category_id, session.id, imageUrl, youtube_url, status, published_at, meta_title, meta_desc, meta_keywords]
+      );
+
+      for (const url of galleryUrls) {
+        await connection.query('INSERT INTO news_gallery (news_id, image_url) VALUES (?, ?)', [newsId, url]);
+      }
+      await connection.commit();
+    } catch (transactionError: any) {
+      await connection.rollback();
+      if (transactionError?.code === 'ER_DUP_ENTRY') {
+        const [duplicate] = await pool.query<RowDataPacket[]>('SELECT id FROM news WHERE slug = ? LIMIT 1', [slug]);
+        if (duplicate.length) {
+          return NextResponse.json({
+            success: true,
+            id: duplicate[0].id,
+            already_saved: true,
+            message: 'Berita ini sudah tersimpan. Anda akan kembali ke daftar berita.'
+          });
+        }
+      }
+      throw transactionError;
+    } finally {
+      connection.release();
     }
 
-    return NextResponse.json({ success: true, id: newsId });
+    return NextResponse.json({ success: true, id: newsId, message: 'Berita berhasil disimpan.' }, { status: 201 });
   } catch (error: any) {
     console.error('News create error:', error);
     return NextResponse.json({ success: false, error: error?.message || 'Failed to create news' }, { status: 500 });

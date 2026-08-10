@@ -1,4 +1,7 @@
 ALTER TABLE news
+  MODIFY COLUMN status ENUM('DRAFT', 'PUBLISHED', 'TRASHED') NOT NULL DEFAULT 'DRAFT';
+
+ALTER TABLE news
   ADD COLUMN deleted_at DATETIME NULL AFTER published_at;
 
 -- Berita yang sudah berada di tong sampah mulai dihitung sejak migrasi dijalankan.

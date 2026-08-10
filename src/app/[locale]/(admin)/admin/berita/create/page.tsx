@@ -23,6 +23,7 @@ export default function CreateBeritaPage() {
   const [submitType, setSubmitType] = useState<'PUBLISHED' | 'DRAFT'>('PUBLISHED');
   const [showPreview, setShowPreview] = useState(false);
   const galleryInputRef = useRef<HTMLInputElement>(null);
+  const submitLockRef = useRef(false);
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm({
     defaultValues: {
       title_id: '',
@@ -113,7 +114,11 @@ export default function CreateBeritaPage() {
     fetchCategories();
   }, []);
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: any, event?: any) => {
+    if (submitLockRef.current) return;
+    submitLockRef.current = true;
+    const requestedStatus = event?.nativeEvent?.submitter?.value === 'DRAFT' ? 'DRAFT' : 'PUBLISHED';
+    setSubmitType(requestedStatus);
     setLoading(true);
     try {
       const formData = new FormData();
@@ -121,11 +126,12 @@ export default function CreateBeritaPage() {
       formData.append('category_id', data.category_id.toString());
       formData.append('content_id', data.content_id);
       formData.append('slug', data.slug);
-      formData.append('status', submitType);
+      formData.append('status', requestedStatus);
       if (data.published_at) formData.append('published_at', data.published_at);
       if (data.meta_title) formData.append('meta_title', data.meta_title);
       if (data.meta_desc) formData.append('meta_desc', data.meta_desc);
       formData.append('meta_keywords', keywordTags.join(', '));
+      if (data.youtube_url) formData.append('youtube_url', data.youtube_url);
 
       if (data.image_main && data.image_main[0]) {
         formData.append('image_main', data.image_main[0]);
@@ -140,19 +146,16 @@ export default function CreateBeritaPage() {
       });
 
       if (res.data.success) {
-        if (submitType === 'DRAFT') {
-          alert('Berita berhasil disimpan sebagai Draft!');
-        } else {
-          alert('Berita berhasil ditayangkan!');
-        }
-        router.push('/admin/berita');
+        window.location.replace('/admin/berita');
+        return;
       }
     } catch (error: any) {
       console.error('Failed to create news:', error);
       const msg = error?.response?.data?.error || error?.message || 'Gagal membuat berita';
       alert(`Gagal membuat berita: ${msg}`);
+      submitLockRef.current = false;
     } finally {
-      setLoading(false);
+      if (submitLockRef.current === false) setLoading(false);
     }
   };
 
@@ -370,17 +373,19 @@ export default function CreateBeritaPage() {
               <div className="flex gap-2">
                 <Button
                   type="submit"
+                  name="status"
+                  value="DRAFT"
                   variant="outline"
                   disabled={loading}
-                  onClick={() => setSubmitType('DRAFT')}
                   className="border-amber-500 text-amber-700 hover:bg-amber-50"
                 >
                   {loading && submitType === 'DRAFT' ? 'Menyimpan...' : 'Simpan ke Draft'}
                 </Button>
                 <Button
                   type="submit"
+                  name="status"
+                  value="PUBLISHED"
                   disabled={loading}
-                  onClick={() => setSubmitType('PUBLISHED')}
                   className="bg-emerald-600 hover:bg-emerald-700"
                 >
                   {loading && submitType === 'PUBLISHED' ? 'Menayangkan...' : 'Tayangkan Berita'}

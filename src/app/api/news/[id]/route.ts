@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
 import { RowDataPacket } from 'mysql2';
 import { getSession } from '@/lib/auth';
+import { ensureNewsTrashSchema } from '@/lib/newsTrash';
 // @ts-ignore
 import { validateUploadedFile } from '@/lib/fileUpload';
 
@@ -142,6 +143,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     }
 
     const { id } = await params;
+    await ensureNewsTrashSchema();
     const [rows] = await pool.query<any>('SELECT status FROM news WHERE id = ?', [id]);
     if (rows.length === 0) {
       return NextResponse.json({ success: false, error: 'News not found' }, { status: 404 });
@@ -154,7 +156,8 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
       await pool.query('UPDATE news SET status = "TRASHED", deleted_at = NOW() WHERE id = ?', [id]);
       return NextResponse.json({ success: true, message: 'Moved to trash' });
     }
-  } catch (error) {
-    return NextResponse.json({ success: false, error: 'Failed to delete' }, { status: 500 });
+  } catch (error: any) {
+    console.error('News delete error:', error);
+    return NextResponse.json({ success: false, error: error?.sqlMessage || error?.message || 'Gagal memproses berita.' }, { status: 500 });
   }
 }

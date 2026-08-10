@@ -10,6 +10,11 @@ async function migrate() {
     port: Number(process.env.DB_PORT || 3306),
   });
 
+  const [statusColumns] = await connection.query("SHOW COLUMNS FROM news LIKE 'status'");
+  if (!String(statusColumns[0]?.Type || '').toUpperCase().includes("'TRASHED'")) {
+    await connection.query("ALTER TABLE news MODIFY COLUMN status ENUM('DRAFT','PUBLISHED','TRASHED') NOT NULL DEFAULT 'DRAFT'");
+  }
+
   const [columns] = await connection.query("SHOW COLUMNS FROM news LIKE 'deleted_at'");
   if (columns.length === 0) {
     await connection.query('ALTER TABLE news ADD COLUMN deleted_at DATETIME NULL AFTER published_at');

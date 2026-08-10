@@ -18,6 +18,7 @@ export default function BeritaAdminPage() {
   const [bulkAction, setBulkAction] = useState('trash');
   const [bulkCategory, setBulkCategory] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [isApplyingBulk, setIsApplyingBulk] = useState(false);
   const itemsPerPage = 10;
 
   const fetchNews = async () => {
@@ -61,13 +62,14 @@ export default function BeritaAdminPage() {
         await axios.delete(`/api/news/${id}`);
         fetchNews();
         setSelectedNews(prev => prev.filter(i => i !== id));
-      } catch (error) {
-        alert('Gagal memproses berita');
+      } catch (error: any) {
+        alert(error.response?.data?.error || 'Gagal memproses berita');
       }
     }
   };
 
   const handleRestore = async (id: string) => {
+    setIsApplyingBulk(true);
     try {
       await axios.post('/api/news/bulk', { action: 'restore', ids: [id] });
       fetchNews();
@@ -107,12 +109,14 @@ export default function BeritaAdminPage() {
         category_id: bulkCategory
       });
       if (res.data.success) {
-        alert('Berhasil menerapkan aksi massal!');
+        alert(res.data.message || 'Berhasil menerapkan aksi massal!');
         fetchNews();
         setSelectedNews([]);
       }
-    } catch (error) {
-      alert('Gagal menerapkan aksi massal');
+    } catch (error: any) {
+      alert(error.response?.data?.error || 'Gagal menerapkan aksi massal');
+    } finally {
+      setIsApplyingBulk(false);
     }
   };
 
@@ -217,8 +221,8 @@ export default function BeritaAdminPage() {
                 </select>
               )}
               
-              <Button onClick={handleBulkAction} size="sm" className="bg-slate-800 hover:bg-slate-900 text-white px-4">
-                Terapkan
+              <Button disabled={isApplyingBulk} onClick={handleBulkAction} size="sm" className="bg-slate-800 hover:bg-slate-900 text-white px-4 disabled:opacity-60">
+                {isApplyingBulk ? 'Memproses...' : 'Terapkan'}
               </Button>
             </div>
           </div>
