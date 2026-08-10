@@ -3,7 +3,7 @@
 import { useParams } from 'next/navigation';
 import { Link } from '@/i18n/routing';
 import { Share2, Globe, MessageCircle, Link as LinkIcon, ChevronRight, Calendar, User, Eye, Tag } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {useLocale} from 'next-intl';
 
 export default function ReadNewsPage() {
@@ -13,6 +13,8 @@ export default function ReadNewsPage() {
   const [article, setArticle] = useState<any>(null);
   const [allNews, setAllNews] = useState<any[]>([]);
   const [copied, setCopied] = useState(false);
+  const sidebarColumnRef = useRef<HTMLElement>(null);
+  const sidebarCardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetch('/api/news')
@@ -58,6 +60,47 @@ export default function ReadNewsPage() {
       })
       .catch(err => console.error(err));
   }, [slug, locale]);
+
+  useEffect(() => {
+    const column = sidebarColumnRef.current;
+    const card = sidebarCardRef.current;
+    if (!column || !card) return;
+
+    let animationFrame = 0;
+    const updateSidebar = () => {
+      window.cancelAnimationFrame(animationFrame);
+      animationFrame = window.requestAnimationFrame(() => {
+        const desktop = window.innerWidth >= 1024;
+        const columnRect = column.getBoundingClientRect();
+        const cardHeight = card.offsetHeight;
+        const topOffset = 112;
+
+        if (!desktop || columnRect.top > topOffset) {
+          Object.assign(card.style, {position: 'static', top: '', left: '', bottom: '', width: '', zIndex: ''});
+        } else if (columnRect.bottom <= topOffset + cardHeight) {
+          Object.assign(card.style, {position: 'absolute', top: '', left: '0px', bottom: '0px', width: '100%', zIndex: '10'});
+        } else {
+          Object.assign(card.style, {
+            position: 'fixed',
+            top: `${topOffset}px`,
+            left: `${columnRect.left}px`,
+            bottom: '',
+            width: `${columnRect.width}px`,
+            zIndex: '30'
+          });
+        }
+      });
+    };
+
+    updateSidebar();
+    window.addEventListener('scroll', updateSidebar, {passive: true});
+    window.addEventListener('resize', updateSidebar);
+    return () => {
+      window.cancelAnimationFrame(animationFrame);
+      window.removeEventListener('scroll', updateSidebar);
+      window.removeEventListener('resize', updateSidebar);
+    };
+  }, [article?.id]);
 
   const getShareData = () => {
     const url = window.location.href;
@@ -117,17 +160,17 @@ export default function ReadNewsPage() {
         </div>
       </div>
 
-      <div className="max-w-[1000px] mx-auto px-4 pt-10 flex flex-col lg:flex-row gap-12">
+      <div className="max-w-[1000px] mx-auto px-4 pt-10 grid grid-cols-1 lg:grid-cols-[minmax(0,7fr)_minmax(260px,3fr)] items-start gap-12">
         
         {/* Main Content Area */}
-        <div className="lg:w-[70%]">
+        <div className="min-w-0">
           
           {/* Article Header */}
           <div className="mb-8">
             <span className="bg-purple-100 text-purple-700 font-bold text-xs px-3 py-1 uppercase tracking-wider rounded">
               {article.category_name || 'News'}
             </span>
-            <h1 className="text-3xl md:text-4xl font-black text-slate-900 mt-4 leading-tight mb-6">
+            <h1 className="text-2xl md:text-3xl font-black text-slate-900 mt-4 leading-[1.25] mb-6">
               {article.title_id}
             </h1>
             
@@ -212,11 +255,11 @@ export default function ReadNewsPage() {
         </div>
 
         {/* Sidebar */}
-        <div className="lg:w-[30%]">
+        <aside ref={sidebarColumnRef} className="relative lg:self-stretch">
           
-          <div className="sticky top-24 space-y-8">
+          <div>
             {/* Trending */}
-            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+            <div ref={sidebarCardRef} data-news-sidebar className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
               <h3 className="text-lg font-bold border-b-2 border-slate-100 pb-3 mb-4 uppercase">Terpopuler</h3>
               <div className="space-y-4">
                 {allNews.slice(0, 5).map((item, index) => (
@@ -232,14 +275,9 @@ export default function ReadNewsPage() {
               </div>
             </div>
 
-            {/* Banner Ad */}
-            <div className="bg-slate-200 h-[250px] rounded-xl flex items-center justify-center text-slate-400 font-bold uppercase tracking-widest text-sm border border-slate-300">
-              Banner Iklan
-            </div>
-
           </div>
 
-        </div>
+        </aside>
 
       </div>
     </div>
