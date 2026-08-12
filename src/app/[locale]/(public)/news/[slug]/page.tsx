@@ -111,7 +111,7 @@ export default function ReadNewsPage() {
           </div>
 
           {/* Rich Text Content */}
-          <article className="prose prose-lg max-w-none prose-emerald prose-headings:font-bold prose-a:text-blue-600 mb-10">
+          <article className="prose prose-lg max-w-none prose-emerald prose-headings:font-bold prose-a:text-blue-600 mb-10 leading-7 [&_p]:!text-justify [&_p]:mb-5 [&_p:last-child]:mb-0 [&_p:empty]:min-h-[1.25rem]">
             <div dangerouslySetInnerHTML={{ __html: article.content }} />
           </article>
 

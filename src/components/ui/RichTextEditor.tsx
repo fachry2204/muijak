@@ -200,7 +200,7 @@ export function RichTextEditor({ content, onChange }: RichTextEditorProps) {
     },
     editorProps: {
       attributes: {
-        class: 'prose prose-sm sm:prose lg:prose-lg xl:prose-2xl max-w-none focus:outline-none min-h-[300px] p-4 bg-white rounded-b-md border border-t-0',
+        class: 'prose prose-sm sm:prose lg:prose-lg xl:prose-2xl max-w-none focus:outline-none min-h-[300px] p-4 bg-white rounded-b-md border border-t-0 [&_p]:!text-justify',
       },
     },
   });

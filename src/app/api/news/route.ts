@@ -32,14 +32,23 @@ export async function GET() {
 
     const publicFilter = session ? '' : "WHERE UPPER(n.status) = 'PUBLISHED'";
     const [rows] = await pool.query<RowDataPacket[]>(`
-      SELECT n.*, c.name_id as category_name, u.name as author_name 
+      SELECT n.*, c.name_id as category_name, u.name as author_name,
+        (SELECT GROUP_CONCAT(ng.image_url ORDER BY ng.id SEPARATOR '||')
+         FROM news_gallery ng
+         WHERE ng.news_id = n.id) AS gallery_image_urls
       FROM news n 
       LEFT JOIN categories c ON n.category_id = c.id 
       LEFT JOIN users u ON n.author_id = u.id 
       ${publicFilter}
       ORDER BY n.created_at DESC
     `);
-    return NextResponse.json({ success: true, data: rows });
+    const data = rows.map((row) => ({
+      ...row,
+      gallery_images: row.gallery_image_urls
+        ? String(row.gallery_image_urls).split('||').filter(Boolean)
+        : []
+    }));
+    return NextResponse.json({ success: true, data });
   } catch (error) {
     return NextResponse.json({ success: false, error: 'Failed to fetch' }, { status: 500 });
   }
@@ -141,12 +150,15 @@ export async function POST(request: Request) {
     let galCount = 1;
     for (const file of galleryFiles) {
       if (file.size > 0) {
+        if (file.size > 2 * 1024 * 1024) {
+          return NextResponse.json({ success: false, error: `Gambar galeri ${file.name} melebihi batas 2MB.` }, { status: 400 });
+        }
         const ext = path.extname(file.name) || '.jpg';
         const validation = await validateUploadedFile(file, ['image/jpeg', 'image/png', 'image/webp']);
         if (!validation.valid) {
           return NextResponse.json({ success: false, error: validation.reason || 'File type not allowed' }, { status: 400 });
         }
-        const galFileName = `MUI Jakarta-${safeTitle}-${galCount}${ext}`;
+        const galFileName = `MUI Jakarta-${safeTitle}-${newsId}-${galCount}${ext}`;
         const buffer = Buffer.from(await file.arrayBuffer());
         fs.writeFileSync(path.join(galleryDir, galFileName), buffer);
         galleryUrls.push(`/gambar/berita/${folderDate}/Gallery/${galFileName}`);

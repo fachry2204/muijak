@@ -2,7 +2,7 @@
 
 import { useParams } from 'next/navigation';
 import { Link } from '@/i18n/routing';
-import { Share2, Globe, MessageCircle, Link as LinkIcon, ChevronRight, Calendar, User, Eye, Tag } from 'lucide-react';
+import { Share2, Globe, MessageCircle, Link as LinkIcon, ChevronRight, Calendar, User, Eye, Tag, Images } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import {useLocale} from 'next-intl';
 
@@ -170,7 +170,7 @@ export default function ReadNewsPage() {
             <span className="bg-purple-100 text-purple-700 font-bold text-xs px-3 py-1 uppercase tracking-wider rounded">
               {article.category_name || 'News'}
             </span>
-            <h1 className="text-2xl md:text-3xl font-black text-slate-900 mt-4 leading-[1.25] mb-6">
+            <h1 className="text-[15px] font-black text-slate-900 mt-4 leading-[1.4] mb-6">
               {article.title_id}
             </h1>
             
@@ -217,9 +217,36 @@ export default function ReadNewsPage() {
           </div>
 
           {/* Rich Text Content */}
-          <article className="prose prose-lg max-w-none prose-emerald prose-headings:font-bold prose-a:text-blue-600 mb-10">
+          <article className="prose prose-lg max-w-none prose-emerald prose-headings:font-bold prose-a:text-blue-600 mb-10 leading-7 [&_p]:!text-justify [&_p]:mb-5 [&_p:last-child]:mb-0 [&_p:empty]:min-h-[1.25rem]">
             <div dangerouslySetInnerHTML={{ __html: article.content_id }} />
           </article>
+
+          {Array.isArray(article.gallery_images) && article.gallery_images.length > 0 ? (
+            <section className="mb-12" aria-labelledby="news-gallery-title">
+              <div className="flex items-center gap-3 mb-5">
+                <Images className="w-6 h-6 text-emerald-600" />
+                <h2 id="news-gallery-title" className="text-2xl font-bold text-slate-900">Galeri Foto</h2>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {article.gallery_images.map((imageUrl: string, index: number) => (
+                  <a
+                    key={`${imageUrl}-${index}`}
+                    href={imageUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group block overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm"
+                  >
+                    <img
+                      src={imageUrl}
+                      alt={`${article.title_id} - Galeri ${index + 1}`}
+                      loading="lazy"
+                      className="aspect-[4/3] w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                  </a>
+                ))}
+              </div>
+            </section>
+          ) : null}
 
           {/* Tags */}
           <div className="flex flex-wrap items-center gap-2 pt-6 border-t border-slate-200 mb-12">
