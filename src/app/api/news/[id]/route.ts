@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
 import { RowDataPacket } from 'mysql2';
 import { getSession } from '@/lib/auth';
+import { ensureNewsGalleryTable } from '@/lib/newsGallery';
 import { ensureNewsTrashSchema } from '@/lib/newsTrash';
 // @ts-ignore
 import { validateUploadedFile } from '@/lib/fileUpload';
@@ -28,6 +29,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 
     const { id } = await params;
     const formData = await request.formData();
+    await ensureNewsGalleryTable();
     
     const title_id = formData.get('title_id') as string;
     const slug = formData.get('slug') as string;
@@ -150,6 +152,8 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     }
 
     if (rows[0].status === 'TRASHED') {
+      await ensureNewsGalleryTable();
+      await pool.query('DELETE FROM news_gallery WHERE news_id = ?', [id]);
       await pool.query('DELETE FROM news WHERE id = ?', [id]);
       return NextResponse.json({ success: true, message: 'Permanently deleted' });
     } else {

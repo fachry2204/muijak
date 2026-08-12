@@ -162,8 +162,10 @@ export default function CreateGaleriPage() {
         router.push('/admin/galeri');
         router.refresh();
       }
-    } catch (error) {
-      alert('Gagal menyimpan galeri');
+    } catch (error: any) {
+      console.error('Failed to create gallery:', error);
+      const message = error?.response?.data?.error || error?.message || 'Gagal menyimpan galeri';
+      alert(`Gagal menyimpan galeri: ${message}`);
       setStatusMsg('');
     } finally {
       setIsSaving(false);

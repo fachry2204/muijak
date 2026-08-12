@@ -3,12 +3,21 @@ import pool from '@/lib/db';
 import { RowDataPacket } from 'mysql2';
 import { validateUploadedFile } from '@/lib/fileUpload';
 import { getSession } from '@/lib/auth';
+import { ensureNewsGalleryTable } from '@/lib/newsGallery';
 
 export async function GET() {
   try {
     const session = await getSession();
+    await ensureNewsGalleryTable();
     // Bersihkan berita yang sudah berada di tong sampah selama 30 hari.
     try {
+      await pool.query(`
+        DELETE ng FROM news_gallery ng
+        INNER JOIN news n ON n.id = ng.news_id
+        WHERE UPPER(n.status) = 'TRASHED'
+          AND n.deleted_at IS NOT NULL
+          AND n.deleted_at <= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      `);
       await pool.query(`
         DELETE FROM news
         WHERE UPPER(status) = 'TRASHED'
@@ -145,14 +154,7 @@ export async function POST(request: Request) {
       }
     }
     
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS news_gallery (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        news_id CHAR(36) NOT NULL,
-        image_url VARCHAR(255) NOT NULL,
-        FOREIGN KEY (news_id) REFERENCES news(id) ON DELETE CASCADE
-      )
-    `);
+    await ensureNewsGalleryTable();
 
     const connection = await pool.getConnection();
     try {

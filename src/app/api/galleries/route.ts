@@ -80,8 +80,11 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({ success: false, error: 'No media provided' }, { status: 400 });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating gallery:', error);
-    return NextResponse.json({ success: false, error: 'Failed to create gallery' }, { status: 500 });
+    return NextResponse.json({
+      success: false,
+      error: error?.message || 'Gagal membuat galeri'
+    }, { status: 500 });
   }
 }
