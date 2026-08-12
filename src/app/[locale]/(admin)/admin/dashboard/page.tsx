@@ -1,10 +1,43 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Newspaper, Users, Eye, ShieldCheck } from 'lucide-react';
 import { getSession } from '@/lib/auth';
+import pool from '@/lib/db';
+import { RowDataPacket } from 'mysql2';
+
+interface RecentActivity extends RowDataPacket {
+  id: string;
+  title_id: string;
+  created_at: Date | string;
+  author_name: string;
+}
+
+function formatRelativeTime(dateValue: Date | string) {
+  const elapsedSeconds = Math.max(0, Math.floor((Date.now() - new Date(dateValue).getTime()) / 1000));
+  if (elapsedSeconds < 60) return 'Baru saja';
+  if (elapsedSeconds < 3600) return `${Math.floor(elapsedSeconds / 60)} menit yang lalu`;
+  if (elapsedSeconds < 86400) return `${Math.floor(elapsedSeconds / 3600)} jam yang lalu`;
+  if (elapsedSeconds < 2592000) return `${Math.floor(elapsedSeconds / 86400)} hari yang lalu`;
+  return new Date(dateValue).toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'});
+}
 
 export default async function AdminDashboardPage() {
   const session = await getSession();
-  const userName = session?.email ? session.email.split('@')[0] : 'Admin';
+  const userPromise = session?.id
+    ? pool.query<RowDataPacket[]>('SELECT name FROM users WHERE id = ? LIMIT 1', [session.id])
+    : Promise.resolve([[] as RowDataPacket[], []] as const);
+  const activityPromise = pool.query<RecentActivity[]>(`
+    SELECT n.id, n.title_id, n.created_at,
+      COALESCE(NULLIF(TRIM(u.name), ''), SUBSTRING_INDEX(u.email, '@', 1), 'Pengguna tidak dikenal') AS author_name
+    FROM news n
+    LEFT JOIN users u ON u.id = n.author_id
+    ORDER BY n.created_at DESC
+    LIMIT 5
+  `);
+
+  const [userResult, activityResult] = await Promise.all([userPromise, activityPromise]);
+  const currentUser = userResult[0][0];
+  const recentActivities = activityResult[0];
+  const userName = currentUser?.name?.trim() || session?.email?.split('@')[0] || 'Pengguna';
 
   return (
     <div>
@@ -70,15 +103,20 @@ export default async function AdminDashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <div key={i} className="flex items-center gap-4 border-b pb-4 last:border-0">
+                {recentActivities.map((activity) => (
+                  <div key={activity.id} className="flex items-center gap-4 border-b pb-4 last:border-0">
                     <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
                     <div>
-                      <p className="text-sm font-medium text-slate-800">Admin menambahkan berita baru "Silaturahmi Ulama"</p>
-                      <p className="text-xs text-slate-500">2 jam yang lalu</p>
+                      <p className="text-sm font-medium text-slate-800">
+                        <span className="font-semibold">{activity.author_name}</span> menambahkan berita baru &quot;{activity.title_id}&quot;
+                      </p>
+                      <p className="text-xs text-slate-500">{formatRelativeTime(activity.created_at)}</p>
                     </div>
                   </div>
                 ))}
+                {recentActivities.length === 0 ? (
+                  <p className="text-sm text-slate-500">Belum ada aktivitas berita.</p>
+                ) : null}
               </div>
             </CardContent>
           </Card>

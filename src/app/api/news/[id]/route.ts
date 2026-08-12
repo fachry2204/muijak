@@ -57,6 +57,10 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     
     const imageMain = formData.get('image_main') as File | null;
     const galleryFiles = formData.getAll('gallery') as File[];
+    const shouldUpdateGallery = formData.get('gallery_update') === '1';
+    const existingGalleryUrls = formData.getAll('existing_gallery')
+      .map((value) => String(value))
+      .filter((value) => value.startsWith('/gambar/berita/'));
     
     const fs = require('fs');
     const path = require('path');
@@ -117,8 +121,8 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       queryParams
     );
     
-    if (galleryFiles.length > 0) {
-      const galleryUrls = [];
+    if (shouldUpdateGallery) {
+      const galleryUrls = [...new Set(existingGalleryUrls)];
       let galCount = 1;
       for (const file of galleryFiles) {
         if (file.size > 0) {

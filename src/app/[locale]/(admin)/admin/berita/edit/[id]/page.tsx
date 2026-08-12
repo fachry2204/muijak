@@ -22,6 +22,7 @@ export default function EditBeritaPage({ params }: { params: Promise<{ id: strin
   const [fetching, setFetching] = useState(true);
   
   const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
+  const [existingGalleryImages, setExistingGalleryImages] = useState<string[]>([]);
   const [mainImagePreview, setMainImagePreview] = useState<string | null>(null);
   const [galleryPreviews, setGalleryPreviews] = useState<string[]>([]);
   const [keywordTags, setKeywordTags] = useState<string[]>([]);
@@ -107,6 +108,10 @@ export default function EditBeritaPage({ params }: { params: Promise<{ id: strin
     setGalleryFiles(prev => prev.filter((_, i) => i !== index));
   };
 
+  const removeExistingGalleryImage = (imageUrl: string) => {
+    setExistingGalleryImages((current) => current.filter((url) => url !== imageUrl));
+  };
+
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
@@ -143,6 +148,7 @@ export default function EditBeritaPage({ params }: { params: Promise<{ id: strin
           if (news.image_url) {
             setMainImagePreview(news.image_url);
           }
+          setExistingGalleryImages(Array.isArray(news.gallery_images) ? news.gallery_images : []);
         }
       } catch (error) {
         console.error('Failed to load data');
@@ -174,6 +180,10 @@ export default function EditBeritaPage({ params }: { params: Promise<{ id: strin
       
       galleryFiles.forEach(file => {
         formData.append('gallery', file);
+      });
+      formData.append('gallery_update', '1');
+      existingGalleryImages.forEach((imageUrl) => {
+        formData.append('existing_gallery', imageUrl);
       });
       
       const res = await axios.put(`/api/news/${id}`, formData, {
@@ -317,22 +327,47 @@ export default function EditBeritaPage({ params }: { params: Promise<{ id: strin
                     onChange={handleAddGalleryImages}
                   />
                 </div>
+
+                {existingGalleryImages.length > 0 && (
+                  <div className="mt-4">
+                    <p className="mb-2 text-sm font-semibold text-slate-700">Galeri yang sudah tersimpan</p>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 bg-white p-3 border rounded-md">
+                      {existingGalleryImages.map((src, index) => (
+                        <div key={src} className="aspect-square relative rounded-md overflow-hidden border border-slate-200 group">
+                          <img src={src} className="w-full h-full object-cover" alt={`Galeri tersimpan ${index + 1}`} />
+                          <button
+                            type="button"
+                            onClick={() => removeExistingGalleryImage(src)}
+                            aria-label={`Hapus galeri tersimpan ${index + 1}`}
+                            className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-7 h-7 flex items-center justify-center text-xs opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
+                          >
+                            X
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 
                 {/* Thumbnails Gallery */}
                 {galleryPreviews.length > 0 && (
-                  <div className="grid grid-cols-3 md:grid-cols-5 gap-3 mt-4 bg-white p-3 border rounded-md">
-                    {galleryPreviews.map((src, i) => (
-                      <div key={i} className="aspect-square relative rounded-md overflow-hidden border border-slate-200 group">
-                        <img src={src} className="w-full h-full object-cover" alt={`Preview ${i+1}`} />
-                        <button 
-                          type="button" 
-                          onClick={() => removeGalleryImage(i)}
-                          className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          X
-                        </button>
-                      </div>
-                    ))}
+                  <div className="mt-4">
+                    <p className="mb-2 text-sm font-semibold text-slate-700">Gambar baru</p>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 bg-white p-3 border rounded-md">
+                      {galleryPreviews.map((src, i) => (
+                        <div key={`${src}-${i}`} className="aspect-square relative rounded-md overflow-hidden border border-slate-200 group">
+                          <img src={src} className="w-full h-full object-cover" alt={`Gambar baru ${i+1}`} />
+                          <button
+                            type="button"
+                            onClick={() => removeGalleryImage(i)}
+                            aria-label={`Hapus gambar baru ${i + 1}`}
+                            className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-7 h-7 flex items-center justify-center text-xs opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
+                          >
+                            X
+                          </button>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>

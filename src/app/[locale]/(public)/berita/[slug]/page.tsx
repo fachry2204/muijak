@@ -2,7 +2,7 @@
 
 import { useParams } from 'next/navigation';
 import { Link } from '@/i18n/routing';
-import { Share2, Globe, MessageCircle, Link as LinkIcon, ChevronRight, Calendar, User, Eye, Tag, Images } from 'lucide-react';
+import { Share2, Globe, MessageCircle, Link as LinkIcon, ChevronRight, ChevronLeft, Calendar, User, Eye, Tag, Images, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import {useLocale} from 'next-intl';
 
@@ -13,6 +13,7 @@ export default function ReadNewsPage() {
   const [article, setArticle] = useState<any>(null);
   const [allNews, setAllNews] = useState<any[]>([]);
   const [copied, setCopied] = useState(false);
+  const [activeGalleryIndex, setActiveGalleryIndex] = useState<number | null>(null);
   const sidebarColumnRef = useRef<HTMLElement>(null);
   const sidebarCardRef = useRef<HTMLDivElement>(null);
 
@@ -101,6 +102,30 @@ export default function ReadNewsPage() {
       window.removeEventListener('resize', updateSidebar);
     };
   }, [article?.id]);
+
+  useEffect(() => {
+    if (activeGalleryIndex === null) return;
+
+    const galleryLength = Array.isArray(article?.gallery_images) ? article.gallery_images.length : 0;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setActiveGalleryIndex(null);
+      if (event.key === 'ArrowLeft' && galleryLength > 0) {
+        setActiveGalleryIndex((current) => current === null ? null : (current - 1 + galleryLength) % galleryLength);
+      }
+      if (event.key === 'ArrowRight' && galleryLength > 0) {
+        setActiveGalleryIndex((current) => current === null ? null : (current + 1) % galleryLength);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [activeGalleryIndex, article?.gallery_images]);
 
   const getShareData = () => {
     const url = window.location.href;
@@ -227,22 +252,25 @@ export default function ReadNewsPage() {
                 <Images className="w-6 h-6 text-emerald-600" />
                 <h2 id="news-gallery-title" className="text-2xl font-bold text-slate-900">Galeri Foto</h2>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {article.gallery_images.map((imageUrl: string, index: number) => (
-                  <a
+                  <button
                     key={`${imageUrl}-${index}`}
-                    href={imageUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group block overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm"
+                    type="button"
+                    onClick={() => setActiveGalleryIndex(index)}
+                    aria-label={`Buka foto galeri ${index + 1}`}
+                    className="group relative block overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
                   >
                     <img
                       src={imageUrl}
                       alt={`${article.title_id} - Galeri ${index + 1}`}
                       loading="lazy"
-                      className="aspect-[4/3] w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      className="aspect-square w-full object-cover transition-transform duration-300 group-hover:scale-110"
                     />
-                  </a>
+                    <span className="absolute inset-0 flex items-end justify-center bg-gradient-to-t from-black/55 via-transparent to-transparent p-2 text-xs font-semibold text-white opacity-0 transition-opacity group-hover:opacity-100">
+                      Lihat Foto
+                    </span>
+                  </button>
                 ))}
               </div>
             </section>
@@ -307,6 +335,64 @@ export default function ReadNewsPage() {
         </aside>
 
       </div>
+
+      {activeGalleryIndex !== null && Array.isArray(article.gallery_images) ? (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Pratinjau foto galeri"
+          onClick={() => setActiveGalleryIndex(null)}
+        >
+          <button
+            type="button"
+            onClick={() => setActiveGalleryIndex(null)}
+            className="absolute right-4 top-4 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-white/15 text-white transition-colors hover:bg-white/25 focus:outline-none focus:ring-2 focus:ring-white"
+            aria-label="Tutup pratinjau foto"
+          >
+            <X className="h-6 w-6" />
+          </button>
+
+          {article.gallery_images.length > 1 ? (
+            <button
+              type="button"
+              onClick={(event) => {
+                event.stopPropagation();
+                setActiveGalleryIndex((activeGalleryIndex - 1 + article.gallery_images.length) % article.gallery_images.length);
+              }}
+              className="absolute left-3 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-white/15 text-white transition-colors hover:bg-white/25 focus:outline-none focus:ring-2 focus:ring-white md:left-6"
+              aria-label="Foto sebelumnya"
+            >
+              <ChevronLeft className="h-7 w-7" />
+            </button>
+          ) : null}
+
+          <div className="flex max-h-[92vh] max-w-6xl flex-col items-center" onClick={(event) => event.stopPropagation()}>
+            <img
+              src={article.gallery_images[activeGalleryIndex]}
+              alt={`${article.title_id} - Galeri ${activeGalleryIndex + 1}`}
+              className="max-h-[82vh] max-w-full rounded-lg object-contain shadow-2xl"
+            />
+            <div className="mt-3 rounded-full bg-black/50 px-4 py-1.5 text-sm font-medium text-white">
+              {activeGalleryIndex + 1} / {article.gallery_images.length}
+            </div>
+          </div>
+
+          {article.gallery_images.length > 1 ? (
+            <button
+              type="button"
+              onClick={(event) => {
+                event.stopPropagation();
+                setActiveGalleryIndex((activeGalleryIndex + 1) % article.gallery_images.length);
+              }}
+              className="absolute right-3 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-white/15 text-white transition-colors hover:bg-white/25 focus:outline-none focus:ring-2 focus:ring-white md:right-6"
+              aria-label="Foto berikutnya"
+            >
+              <ChevronRight className="h-7 w-7" />
+            </button>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   );
 }
