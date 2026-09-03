@@ -108,6 +108,29 @@ export default function SettingsManagementPage() {
     }
   };
 
+  const handleBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('home_banner_image', file);
+    setIsSaving(true);
+    try {
+      const res = await axios.post('/api/settings', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      if (res.data.success) {
+        await fetchData();
+        alert('Banner halaman utama berhasil diganti!');
+      }
+    } catch (error) {
+      alert(axios.isAxiosError(error) ? (error.response?.data?.error || 'Gagal mengunggah banner') : 'Gagal mengunggah banner');
+    } finally {
+      setIsSaving(false);
+      e.target.value = '';
+    }
+  };
+
   const updateSetting = (key: string, value: string) => {
     setSettings(prev => ({ ...prev, [key]: value }));
   };
@@ -314,6 +337,59 @@ export default function SettingsManagementPage() {
             </CardContent>
           </Card>
         </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Camera className="w-5 h-5 text-emerald-600" /> Banner Halaman Utama
+            </CardTitle>
+            <CardDescription>Banner tampil setelah Jadwal Sholat dan sebelum Berita Utama. Rasio gambar yang disarankan 5:1.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-5">
+            <div className="relative overflow-hidden rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 min-h-40 flex items-center justify-center group">
+              <input
+                type="file"
+                className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
+                accept="image/jpeg,image/png,image/gif,image/webp"
+                onChange={handleBannerUpload}
+                disabled={isSaving}
+              />
+              {settings.home_banner_image ? (
+                <img src={settings.home_banner_image} alt="Pratinjau banner" className="w-full aspect-[5/1] object-cover" />
+              ) : (
+                <div className="p-8 text-center">
+                  <Upload className="w-9 h-9 text-emerald-500 mx-auto mb-3" />
+                  <p className="font-bold text-slate-700">Klik untuk memilih gambar banner</p>
+                  <p className="text-xs text-slate-500 mt-1">JPG, PNG, GIF, atau WebP — maksimal 10 MB</p>
+                </div>
+              )}
+              {settings.home_banner_image && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/40 transition-colors">
+                  <span className="text-white font-bold opacity-0 group-hover:opacity-100 transition-opacity">Klik untuk ganti banner</span>
+                </div>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="home-banner-link">Tautan tujuan (opsional)</Label>
+                <Input id="home-banner-link" type="url" placeholder="https://contoh.com" value={settings.home_banner_link || ''} onChange={(e) => updateSetting('home_banner_link', e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="home-banner-alt">Teks alternatif gambar</Label>
+                <Input id="home-banner-alt" placeholder="Keterangan singkat banner" value={settings.home_banner_alt || ''} onChange={(e) => updateSetting('home_banner_alt', e.target.value)} />
+              </div>
+            </div>
+
+            <label className="flex items-center gap-3 rounded-lg border border-slate-200 p-4 cursor-pointer">
+              <input type="checkbox" className="w-5 h-5 accent-emerald-600" checked={settings.home_banner_enabled !== '0'} onChange={(e) => updateSetting('home_banner_enabled', e.target.checked ? '1' : '0')} />
+              <span>
+                <span className="block font-bold text-slate-700">Tampilkan banner</span>
+                <span className="block text-xs text-slate-500">Nonaktifkan sementara tanpa menghapus gambar.</span>
+              </span>
+            </label>
+          </CardContent>
+        </Card>
 
         <Card>
           <CardHeader>

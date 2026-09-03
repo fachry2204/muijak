@@ -45,6 +45,7 @@ export default function HomePage() {
   const [activeSholat, setActiveSholat] = useState<string>('');
   const [dbNews, setDbNews] = useState<any[]>([]);
   const [randomQuestion, setRandomQuestion] = useState<string>("");
+  const [siteSettings, setSiteSettings] = useState<Record<string, string>>({});
 
   useEffect(() => {
     // Set random question
@@ -59,6 +60,13 @@ export default function HomePage() {
         }
       })
       .catch(err => console.error("Error fetching news:", err));
+
+    fetch('/api/settings')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.data) setSiteSettings(data.data);
+      })
+      .catch(err => console.error("Error fetching settings:", err));
 
     // Fetch Jadwal Sholat
     const date = new Date();
@@ -240,6 +248,36 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* HOMEPAGE BANNER */}
+      {siteSettings.home_banner_enabled !== '0' && (
+        <section className="max-w-[1200px] mx-auto px-4 mb-10">
+          {siteSettings.home_banner_image ? (
+            <a
+              href={siteSettings.home_banner_link || undefined}
+              target={siteSettings.home_banner_link ? '_blank' : undefined}
+              rel={siteSettings.home_banner_link ? 'noopener noreferrer' : undefined}
+              aria-label={siteSettings.home_banner_alt || 'Banner MUI Provinsi DKI Jakarta'}
+              className={`block overflow-hidden rounded-2xl shadow-lg ${siteSettings.home_banner_link ? 'cursor-pointer' : 'cursor-default'}`}
+              onClick={(event) => { if (!siteSettings.home_banner_link) event.preventDefault(); }}
+            >
+              <img
+                src={siteSettings.home_banner_image}
+                alt={siteSettings.home_banner_alt || 'Banner MUI Provinsi DKI Jakarta'}
+                className="w-full aspect-[4/1] md:aspect-[5/1] object-cover"
+              />
+            </a>
+          ) : (
+            <div className="overflow-hidden rounded-2xl shadow-lg">
+              <img
+                src="/gambar/banner-home-default.png"
+                alt="Banner MUI Provinsi DKI Jakarta"
+                className="w-full aspect-[4/1] md:aspect-[5/1] object-cover"
+              />
+            </div>
+          )}
+        </section>
+      )}
 
       {/* BERITA UTAMA SECTION */}
       <section className="mb-16">

@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
 import { RowDataPacket } from 'mysql2';
-import { isFileSafe } from '@/lib/fileUpload';
+import { validateUploadedFile } from '@/lib/fileUpload';
+import { getSession } from '@/lib/auth';
 
 export async function GET() {
   try {
@@ -24,6 +25,11 @@ import path from 'path';
 
 export async function POST(request: Request) {
   try {
+    const session = await getSession();
+    if (!session || !['ADMIN', 'STAFF'].includes(session.role)) {
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    }
+
     const contentType = request.headers.get('content-type') || '';
     let settings: Record<string, string> = {};
 
@@ -32,10 +38,11 @@ export async function POST(request: Request) {
       for (const [key, value] of formData.entries()) {
         if (value instanceof File) {
           if (value.size > 0) {
-            const ext = path.extname(value.name) || '.png';
-        if (!isFileSafe(value.name)) {
-          return NextResponse.json({ success: false, error: 'File type not allowed' }, { status: 400 });
-        }
+            const validation = await validateUploadedFile(value, ['image/jpeg', 'image/png', 'image/gif', 'image/webp']);
+            if (!validation.valid) {
+              return NextResponse.json({ success: false, error: validation.reason || 'File type not allowed' }, { status: 400 });
+            }
+            const ext = path.extname(value.name).toLowerCase() || '.png';
             const fileName = `${key}-${Date.now()}${ext}`;
             const dirPath = path.join(process.cwd(), 'public', 'uploads');
             
@@ -68,4 +75,3 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: false, error: 'Failed to update settings' }, { status: 500 });
   }
 }
-
