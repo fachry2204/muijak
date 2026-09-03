@@ -5,6 +5,7 @@ import { Link } from '@/i18n/routing';
 import { Share2, Globe, MessageCircle, Link as LinkIcon, ChevronRight, ChevronLeft, Calendar, User, Eye, Tag, Images, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import {useLocale} from 'next-intl';
+import { ManagedBanner } from '@/components/ui/ManagedBanner';
 
 export default function ReadNewsPage() {
   const params = useParams();
@@ -284,8 +285,10 @@ export default function ReadNewsPage() {
             </span>
           </div>
 
+          <ManagedBanner slot="below_news" className="aspect-[5/1] mb-10" />
+
           {/* Related News */}
-          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
             <h3 className="text-xl font-bold border-l-4 border-emerald-600 pl-3 mb-6">Berita Terkait</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
               {allNews.filter(n => n.id !== article.id).slice(0, 8).map((related) => {
@@ -305,6 +308,7 @@ export default function ReadNewsPage() {
                 );
               })}
             </div>
+
           </div>
           
         </div>

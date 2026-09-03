@@ -5,6 +5,7 @@ import pool from '@/lib/db';
 import { LanguageSwitcher } from '@/components/layout/LanguageSwitcher';
 import { getSession } from '@/lib/auth';
 import { PageContentProvider } from '@/components/providers/PageContentProvider';
+import { GlobalSidebarBanner } from '@/components/layout/GlobalSidebarBanner';
 
 export default async function PublicLayout({
   children,
@@ -36,6 +37,7 @@ export default async function PublicLayout({
           <main className="flex-grow">
             {children}
           </main>
+          <GlobalSidebarBanner />
           <Footer />
           <LanguageSwitcher />
         </PageContentProvider>

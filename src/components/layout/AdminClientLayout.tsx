@@ -7,7 +7,7 @@ import axios from 'axios';
 import { 
   Menu, Search, Bell, Maximize, Moon, ChevronDown, 
   LayoutDashboard, FileText, Tags, Building2, UsersRound, 
-  Settings, Users, LogOut, BookOpen, ExternalLink, LineChart, MapPin, HelpCircle, Images, UserCircle
+  Settings, Users, LogOut, BookOpen, ExternalLink, LineChart, MapPin, HelpCircle, Images, UserCircle, Camera
 } from 'lucide-react';
 
 export default function AdminClientLayout({ children, session }: { children: React.ReactNode, session: any }) {
@@ -33,7 +33,8 @@ export default function AdminClientLayout({ children, session }: { children: Rea
         { name: "Kategori Berita", href: "/admin/categories", icon: Tags },
         { name: "Fatwa", href: "/admin/fatwa", icon: BookOpen },
         { name: "Galeri", href: "/admin/galeri", icon: Images },
-        { name: "Tanya Jawab", href: "/admin/tanya-jawab", icon: HelpCircle }
+        { name: "Tanya Jawab", href: "/admin/tanya-jawab", icon: HelpCircle },
+        { name: "Banner", href: "/admin/banner", icon: Camera }
       ]
     },
     {

@@ -1,9 +1,15 @@
 import type { NextConfig } from "next";
 import createNextIntlPlugin from 'next-intl/plugin';
+import path from 'path';
 
 const withNextIntl = createNextIntlPlugin();
 
 const nextConfig: NextConfig = {
+  // Keep Turbopack scoped to this app when a parent hosting directory contains
+  // another package-lock.json (common on shared hosting/Plesk deployments).
+  turbopack: {
+    root: path.resolve(__dirname),
+  },
   images: {
     remotePatterns: [
       {
